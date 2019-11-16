@@ -1,6 +1,7 @@
 # import the necessary packages
 from collections import deque
 import numpy as np
+import copy 
 import cv2
 import math
 import imutils
@@ -10,8 +11,7 @@ from BallDetection import BallDetection
 
 from filter import MyFilter
 
-kalman = MyFilter(0.03333)
-
+kalman = MyFilter(0.03333, 12.0)
     
 # lower and upper boundaries of the "white"
 whiteLower = (10, 1, 1)
@@ -46,11 +46,20 @@ while True:
         cv2.circle(frame, (int(x), int(y)), int(20), (255, 255, 255), 2)
 
     filterd = kalman.dofilter(x, y)
-    #cv2.circle(frame_copy, (int(filterd[0]), int(filterd[1])), int(15), (255, 255, 0), 2)
+    kalmanPrediction = copy.deepcopy(kalman)
+
+    last_point = (int(filterd[0]),int(filterd[1]))
+    for i in range(0, 20):
+        prediction = kalmanPrediction.dofilter(None, None)
+        cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(prediction[0]),int(prediction[1])), (0, 0, 255), 2)
+        last_point = prediction
+        
+    cv2.circle(frame, (int(filterd[0]), int(filterd[1])), 2, (255, 255, 0), 2)
     
     # show the frame to our screen
     cv2.imshow("Frame", frame)
-    cv2.waitKey(10)
+    cv2.waitKey(20)
+    frame_no += 1
 
     
 cv2.waitKey(2000)
