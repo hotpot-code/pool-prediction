@@ -21,12 +21,11 @@ class MyFilter():
         #Hier bitte Ihre Filterimplementierung
         
         # Messrauschen
-        abweichung_sensor1 = 0.01 ** 2
-        abweichung_sensor2 = 0.01 ** 2
-        R = np.diag([abweichung_sensor1, abweichung_sensor1, abweichung_sensor2, abweichung_sensor2])
+        abweichung_sensor = 0.01 ** 2
+        R = np.diag([abweichung_sensor, abweichung_sensor])
         
         # Prozessrauschen
-        Q = np.eye(4) * self.process_noise ** 2
+        Q = np.eye(2) * self.process_noise ** 2
 
         # Zustandstransfermatrix (constant acceleration)
         Ad = np.matrix([[1, self.Ts, (self.Ts**2) / 2.0, 0, 0, 0],
@@ -37,18 +36,16 @@ class MyFilter():
                         [0, 0, 0, 0, 0, 1]])
         
         Gd = np.matrix([
-            [(self.Ts**3) / 6.0, 0, (self.Ts**3) / 6.0, 0],
-            [(self.Ts**2) / 2.0, 0, (self.Ts**2) / 2.0, 0],
-            [self.Ts, 0, self.Ts, 0],
-            [0, (self.Ts**3) / 6.0, 0, (self.Ts**3) / 6.0],
-            [0, (self.Ts**2) / 2.0, 0, (self.Ts**2) / 2.0],
-            [0, self.Ts, 0, self.Ts]
+            [(self.Ts**3) / 6.0, 0],
+            [(self.Ts**2) / 2.0, 0],
+            [self.Ts, 0],
+            [0, (self.Ts**3) / 6.0],
+            [0, (self.Ts**2) / 2.0],
+            [0, self.Ts]
         ])
         
         # Umwandlung von (sx, vx, ax, sy, vy, ay) zu (sx, sy, sx, sy)
         C = np.matrix([
-            [1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 1, 0, 0],
             [1, 0, 0, 0, 0, 0],
             [0, 0, 0, 1, 0, 0]
         ])
@@ -64,8 +61,6 @@ class MyFilter():
         if (y1 is not None):
             # Messwert Array zu Matrix
             y = np.matrix([
-                [y1],
-                [y2],
                 [y1],
                 [y2]
             ])
