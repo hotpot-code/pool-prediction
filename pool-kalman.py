@@ -23,6 +23,8 @@ vs = cv2.VideoCapture("videos/pool.mp4")
 
 frame_no = 0
 
+last_points_filtered = deque([])
+last_points = deque([])
 # keep looping
 while True:
     
@@ -44,15 +46,34 @@ while True:
     
     if (x is not None and y is not None):
         cv2.circle(frame, (int(x), int(y)), int(20), (255, 255, 255), 2)
+        last_points.append([x,y])
 
+    if len(last_points) > 1:
+        last_point = None
+        for point in last_points:
+            if last_point is not None:
+                cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (0, 255, 255), 2)
+            last_point = point
+
+    last_point = None
     filterd = kalman.dofilter(x, y)
+    last_points_filtered.append(filterd)
+    if len(last_points_filtered) > 1:
+        last_point = None
+        for point in last_points_filtered:
+            if last_point is not None:
+                cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (0, 255, 0), 2)
+            last_point = point
+            
+
+
     kalmanPrediction = copy.deepcopy(kalman)
 
-    last_point = (int(filterd[0]),int(filterd[1]))
+    last_point_p = (int(filterd[0]),int(filterd[1]))
     for i in range(0, 20):
         prediction = kalmanPrediction.dofilter(None, None)
-        cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(prediction[0]),int(prediction[1])), (0, 0, 255), 2)
-        last_point = prediction
+        cv2.line(frame, (int(last_point_p[0]),int(last_point_p[1])), (int(prediction[0]),int(prediction[1])), (0, 0, 255), 2)
+        last_point_p = prediction
         
     cv2.circle(frame, (int(filterd[0]), int(filterd[1])), 2, (255, 255, 0), 2)
     
