@@ -38,7 +38,7 @@ while True:
         break
         
     # crop image
-    frame = frame[70:620, 100:1150]
+    frame = frame[60:620, 100:1150]
     # resize image
     frame = imutils.resize(frame, width=600)
 
