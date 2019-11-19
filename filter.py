@@ -77,5 +77,13 @@ class MyFilter():
         
         return self.xhat
 
-    def getLastFilterResult(self):
-        return self.xhat
+    def getPredictionAfterSec(self, sec):
+        # Zustandstransfermatrix (constant acceleration)
+        Ad = np.matrix([[1, sec, (sec**2) / 2.0, 0, 0, 0],
+                        [0, 1, sec, 0, 0, 0],
+                        [0, 0, 1, 0, 0, 0],
+                        [0, 0, 0, 1, sec, (sec**2) / 2.0],
+                        [0, 0, 0, 0, 1, sec],
+                        [0, 0, 0, 0, 0, 1]])
+        x_prior = Ad * self.x_post
+        return np.array([x_prior[0,0], x_prior[3,0]])

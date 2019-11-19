@@ -11,7 +11,7 @@ from BallDetection import BallDetection
 
 from filter import MyFilter
 
-kalman = MyFilter(0.03333, 12.0)
+kalman = MyFilter(0.03333, 20.0)
     
 # lower and upper boundaries of the "white"
 whiteLower = (10, 1, 1)
@@ -66,14 +66,9 @@ while True:
             last_point = point
             
 
+    prediction = kalman.getPredictionAfterSec(0.33)
+    cv2.line(frame, (int(filterd[0]),int(filterd[1])), (int(prediction[0]),int(prediction[1])), (0, 0, 255), 2)
 
-    kalmanPrediction = copy.deepcopy(kalman)
-
-    last_point_p = (int(filterd[0]),int(filterd[1]))
-    for i in range(0, 20):
-        prediction = kalmanPrediction.dofilter(None, None)
-        cv2.line(frame, (int(last_point_p[0]),int(last_point_p[1])), (int(prediction[0]),int(prediction[1])), (0, 0, 255), 2)
-        last_point_p = prediction
         
     cv2.circle(frame, (int(filterd[0]), int(filterd[1])), 2, (255, 255, 0), 2)
     
