@@ -21,7 +21,7 @@ class MyFilter():
         #Hier bitte Ihre Filterimplementierung
         
         # Messrauschen
-        abweichung_sensor = 0.01 ** 2
+        abweichung_sensor = 2.0 ** 2
         R = np.diag([abweichung_sensor, abweichung_sensor])
         
         # Prozessrauschen
