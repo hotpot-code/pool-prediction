@@ -12,15 +12,15 @@ from BallDetection import BallDetection
 
 from filter.filter_constant_velocity import MyFilter
 
-kalman = MyFilter(0.03333, 600.0, 2.1)
+kalman = MyFilter(0.01666, 600.0, 2.1)
     
 # lower and upper boundaries of the "white"
-whiteLower = (10, 1, 1)
-whiteUpper = (50, 120, 250)
-whiteBallDetection = BallDetection(whiteLower, whiteUpper, 5, 11)
+whiteLower = (20, 0, 150)
+whiteUpper = (45, 165, 255)
+whiteBallDetection = BallDetection(whiteLower, whiteUpper, 3, 11)
 
 # load video
-vs = cv2.VideoCapture("videos/pool.mp4")
+vs = cv2.VideoCapture("videos/pool_3.mp4")
 
 frame_no = 0
 
@@ -29,6 +29,9 @@ last_points = deque([])
 
 abweichung_x = 0
 abweichung_y = 0
+
+frame_number = 360
+vs.set(cv2.CAP_PROP_POS_FRAMES, frame_number-1);
 
 # keep looping
 while True:
@@ -43,7 +46,7 @@ while True:
         break
         
     # crop image
-    frame = frame[60:620, 100:1150]
+    #frame = frame[60:620, 100:1150]
     # resize image
     frame = imutils.resize(frame, width=600)
 
