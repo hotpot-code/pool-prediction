@@ -83,7 +83,7 @@ while True:
             
     kalmanPrediction = copy.deepcopy(kalman)
     last_prediction = filterd
-    for i in range(0, 20):
+    for i in range(0, 50):
         new_prediction = kalmanPrediction.dofilter(None, None)
         cv2.line(frame, (int(last_prediction[0]),int(last_prediction[1])), (int(new_prediction[0]),int(new_prediction[1])), (0, 0, 255), 2)
         last_prediction = new_prediction
