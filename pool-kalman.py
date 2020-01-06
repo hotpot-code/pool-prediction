@@ -51,9 +51,9 @@ while True:
     x_correct = x
     y_correct = y
 
-    if (x is not None and y is not None):
-        x = x + np.random.randn() * 2
-        y = y + np.random.randn() * 2
+    # if (x is not None and y is not None):
+    #     x = x + np.random.randn() * 2
+    #     y = y + np.random.randn() * 2
     
     if (x is not None and y is not None):
         cv2.circle(frame, (int(x), int(y)), int(20), (255, 255, 255), 2)
@@ -70,10 +70,27 @@ while True:
     filterd = kalman.dofilter(x, y)
 
     velocity = np.array([
-        [kalman.x_post[0]],
-        [kalman.x_post[2]]
+        [kalman.x_post[1]],
+        [kalman.x_post[3]]
     ])
     tempo = np.linalg.norm(velocity)
+    # 170cm / 600px
+    tempoPerMeter = tempo * 0.028
+    tempoRounded = int(tempoPerMeter * 100) / 100
+
+    font                   = cv2.FONT_HERSHEY_SIMPLEX
+    bottomLeftCornerOfText = (10,30)
+    fontScale              = 0.5
+    fontColor              = (255,255,255)
+    lineType               = 2
+
+    cv2.putText(frame,str(tempoRounded) + ' m/s', 
+        bottomLeftCornerOfText, 
+        font, 
+        fontScale,
+        fontColor,
+        lineType)
+
     print(tempo)
     last_points_filtered.append(filterd)
     if len(last_points_filtered) > 1:
