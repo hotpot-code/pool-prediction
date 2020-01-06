@@ -91,7 +91,7 @@ while True:
         fontColor,
         lineType)
 
-    print(tempo)
+    #print(tempo)
     last_points_filtered.append(filterd)
     if len(last_points_filtered) > 1:
         last_point = None
