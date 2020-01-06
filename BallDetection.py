@@ -18,8 +18,11 @@ class BallDetection():
     def detectBall(self, frame):
 
         #contrast
-        alpha = -2 # Contrast control (1.0-3.0)
-        beta = 30 # Brightness control (0-100)
+        alpha = 1 # Contrast control (1.0-3.0)
+        beta = 10 # Brightness control (0-100)
+
+        #alpha = 1 # Contrast control (1.0-3.0)
+        #beta = 0 # Brightness control (0-100)
 
         contrast = cv2.convertScaleAbs(frame, alpha=alpha, beta=beta)
         cv2.imshow("contrast", contrast)
@@ -28,25 +31,24 @@ class BallDetection():
         imghsv = cv2.cvtColor(contrast, cv2.COLOR_BGR2HSV).astype("float32")
 
         (h, s, v) = cv2.split(imghsv)
-        s = s*2
+        s = s
         s = np.clip(s,0,255)
         imghsv = cv2.merge([h,s,v])
 
         imgrgb = cv2.cvtColor(imghsv.astype("uint8"), cv2.COLOR_HSV2BGR)
 
         #blur image
-        blurred = cv2.GaussianBlur(imgrgb, (5, 5), 0)
+        blurred = cv2.GaussianBlur(contrast, (5, 5), 0)
         #convert to hsv
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-
-
         mask = cv2.inRange(hsv, self.colorMin, self.colorMax)
-        
-        # clean mask
-        mask = cv2.erode(mask, None, iterations=1)
-        mask = cv2.dilate(mask, None, iterations=1)
 
-        cv2.imshow("mask", hsv)
+      
+        # clean mask
+        mask = cv2.erode(mask, None, iterations=2)
+        mask = cv2.dilate(mask, None, iterations=2)
+
+        cv2.imshow("mask", mask)  
         
         # find contours in the mask and initialize the current
         # (x, y) center of the ball

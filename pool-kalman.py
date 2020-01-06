@@ -20,7 +20,7 @@ whiteUpper = (45, 165, 255)
 whiteBallDetection = BallDetection(whiteLower, whiteUpper, 3, 11)
 
 # load video
-vs = cv2.VideoCapture("videos/pool_3.mp4")
+vs = cv2.VideoCapture("videos/pool_4.mp4")
 
 frame_no = 0
 
@@ -30,7 +30,9 @@ last_points = deque([])
 abweichung_x = 0
 abweichung_y = 0
 
-frame_number = 360
+#frame_number = 360 #pool_3 and others
+frame_number = 30 #pool_4
+
 vs.set(cv2.CAP_PROP_POS_FRAMES, frame_number-1);
 
 # keep looping
