@@ -4,7 +4,7 @@ import math
 
 class Ball():
 
-    def __init__(self, position, size = 2, start_velocity = 900, friction = 0.07):
+    def __init__(self, position, size = 2, start_velocity = 900, friction = 0.06):
         self.forward = np.array([0, -1])
         self.position = position
         self.size = size
@@ -13,7 +13,7 @@ class Ball():
 
     def update(self, delta_time):
         if self.velocity > 0:
-            self.velocity += -1 * self.friction * delta_time
+            self.velocity += -1 * self.friction * 9.81 * delta_time
         else:
             self.velocity = 0
         self.moveWithVelocity(self.velocity, delta_time)

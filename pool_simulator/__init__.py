@@ -7,7 +7,7 @@ from .Bank import Bank
 
 class PoolSimulation():
 
-    def __init__(self, start_position = (960,540), start_angle = math.pi/2 + 0.3, start_velocity = 900, friction = 0.07, ms = 16):
+    def __init__(self, start_position = (960,540), start_angle = math.pi/2 + 0.3, start_velocity = 900, friction = 0.06, ms = 16):
         self.ball = Ball(start_position, 25, start_velocity, friction)
         self.ball.setRotation(start_angle)
         self.bank_left = Bank((100,100), (100, 980))
