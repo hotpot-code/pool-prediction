@@ -6,14 +6,14 @@ class MyFilter():
         self.sensor_noise = sensor_noise
         self.xhat = 0
         # init für x posteriori (geschätzte Werte)
-        self.x_post = np.matrix([
+        self.x_post = np.array([
             [0], # Start x Position
             [0], # Start x Geschwindigkeit
             [0], # Start y Position
             [0], # Start y Geschwindigkeit
         ])
         #init für P posteriori (geschätze Abweichung) groß machen
-        self.P_post = np.diag([1000, 1000, 1000, 1000])
+        self.P_post = np.eye(4) * 100000000
         self.Ts = Ts
 
     def dofilter(self, y1, y2):
@@ -21,18 +21,18 @@ class MyFilter():
         
         # Messrauschen
         abweichung_sensor = self.sensor_noise ** 2
-        R = np.diag([abweichung_sensor, abweichung_sensor])
+        R = np.eye(2) * abweichung_sensor
         
         # Prozessrauschen
         Q = np.eye(2) * self.process_noise ** 2
 
         # Zustandstransfermatrix (constant acceleration)
-        Ad = np.matrix([[1, self.Ts, 0, 0],
+        Ad = np.array([[1, self.Ts, 0, 0],
                         [0, 1, 0, 0, ],
                         [0, 0, 1, self.Ts],
                         [0, 0, 0, 1]])
         
-        Gd = np.matrix([
+        Gd = np.array([
             [(self.Ts**2) / 2, 0],
             [self.Ts, 0],
             [0, (self.Ts**2) / 2],
@@ -40,35 +40,35 @@ class MyFilter():
         ])
         
         # Umwandlung von (sx, vx, ax, sy, vy, ay) zu (sx, sy, sx, sy)
-        C = np.matrix([
+        C = np.array([
             [1, 0, 0, 0],
             [0, 0, 1, 0]
         ])
         
         # x priori
-        x_prior = Ad * self.x_post
+        x_prior = np.matmul(Ad, self.x_post)
         # P priori
-        P_prior = Ad * self.P_post * Ad.T + Gd * Q * Gd.T
+        P_prior = np.matmul(Ad, np.matmul(self.P_post, Ad.T)) + np.matmul(Gd, np.matmul(Q, Gd.T))
                 
-        S = C * P_prior * C.T + R
-        K = P_prior * C.T * (S**-1)
+        S = np.matmul(C, np.matmul(P_prior, C.T)) + R
+        K = np.matmul(P_prior, np.matmul(C.T, np.linalg.inv(S)))
         
         if (y1 is not None):
             # Messwert Array zu Matrix
-            y = np.matrix([
+            y = np.array([
                 [y1],
                 [y2]
             ])
         else:
-            y =  C * x_prior
+            y =  np.matmul(C, x_prior)
         
-        self.x_post = x_prior + K * (y - C * x_prior)
-        self.P_post = (np.eye(4) - K * C) * P_prior
+        self.x_post = x_prior + np.matmul(K, (y - np.matmul(C, x_prior)))
+        self.P_post = np.dot((np.eye(4) - np.dot(K, C)), P_prior)
         # Schätzung der Systemmesswerte
         self.xhat = np.array([self.x_post[0,0], self.x_post[2,0]])
 
         #self.xhat = y1_xy
-        
+
         return self.xhat
 
     def get_p_post(self):
