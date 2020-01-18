@@ -1,6 +1,10 @@
 .ipynb_checkpoints
 __pycache__
 
+.idea/
+.vs/
+.vscode/
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
