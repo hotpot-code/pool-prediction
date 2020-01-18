@@ -12,8 +12,10 @@ class Ball():
         self.friction = friction
 
     def update(self, delta_time):
+        # http://web.cs.iastate.edu/~jia/papers/billiard-analysis.pdf
+        self.acceleration = -(5/7) * self.friction * 9.81
         if self.velocity > 0:
-            self.velocity += -1 * self.friction * 9.81 * delta_time
+            self.velocity += self.acceleration * delta_time
         else:
             self.velocity = 0
         self.moveWithVelocity(self.velocity, delta_time)
@@ -24,8 +26,8 @@ class Ball():
 
     def moveWithVelocity(self, velocity, delta_time):
         directed_velocity = self.forward * velocity
-        new_x = self.position[0] + directed_velocity[0] * (delta_time / 1000)
-        new_y = self.position[1] + directed_velocity[1] * (delta_time / 1000)
+        new_x = self.position[0] + directed_velocity[0] * delta_time
+        new_y = self.position[1] + directed_velocity[1] * delta_time
         self.position = (new_x, new_y)
 
     def setRotation(self, angle):
