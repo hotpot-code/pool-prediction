@@ -15,6 +15,8 @@ class VideoHandler():
             self.whiteLower = (15, 30, 1)
             self.whiteUpper = (30, 105, 255)
             self.frame_number = 1 #start
+            self.radiusMin = 3
+            self.radiusMax = 11
 
         elif name =="pool_3":
             self.alpha = 1 # Contrast control (1.0-3.0)
@@ -22,6 +24,8 @@ class VideoHandler():
             self.whiteLower = (20, 0, 150)
             self.whiteUpper = (45, 165, 255)
             self.frame_number = 30 #start
+            self.radiusMin = 3
+            self.radiusMax = 11
 
         elif name == "pool_4":
             self.alpha = 1 # Contrast control (1.0-3.0)
@@ -29,13 +33,19 @@ class VideoHandler():
             self.whiteLower = (20, 0, 150)
             self.whiteUpper = (45, 165, 255)
             self.frame_number = 30 #start
+            self.radiusMin = 3
+            self.radiusMax = 11
 
         elif name == "pool_5":
-            self.alpha = 0.8 # Contrast control (1.0-3.0)
-            self.beta = 40 # Brightness control (0-100)
-            self.whiteLower = (0, 0, 30)
-            self.whiteUpper = (255, 50, 50)
+            self.alpha = 0.9 # Contrast control (1.0-3.0)
+            self.beta = 20 # Brightness control (0-100)
+            #self.whiteLower = (0, 0, 0) #8-ball
+            #self.whiteUpper = (30, 255, 100) #8-ball
+            self.whiteLower = (20, 0, 150)
+            self.whiteUpper = (45, 165, 255)
             self.frame_number = 30
+            self.radiusMin = 3
+            self.radiusMax = 11
 
         else: #default: Pool
             self.name = "pool"
@@ -44,6 +54,8 @@ class VideoHandler():
             self.alpha = 1 # Contrast control (1.0-3.0)
             self.beta = 10 # Brightness control (0-100)
             self.frame_number = 1 #start
+            self.radiusMin = 3
+            self.radiusMax = 11
 
         #self.whiteBallDetection = BallDetection(whiteLower, whiteUpper, 3, 11)
         self.vs = cv2.VideoCapture("videos/" + name + ".mp4")
@@ -74,4 +86,4 @@ class VideoHandler():
         return frame
 
     def giveParameters(self):
-        return (self.alpha, self.beta, self.whiteLower, self.whiteUpper)
+        return (self.alpha, self.beta, self.whiteLower, self.whiteUpper, self.radiusMin, self.radiusMax)

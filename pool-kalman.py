@@ -15,7 +15,7 @@ from filter.filter_constant_velocity import MyFilter
 kalman = MyFilter(0.01666, 600.0, 2.1)
 
 vh = VideoHandler("pool_5")
-whiteBallDetection = BallDetection(*vh.giveParameters(), 3, 11)
+whiteBallDetection = BallDetection(*vh.giveParameters())
 
 frame_no = 0
 
