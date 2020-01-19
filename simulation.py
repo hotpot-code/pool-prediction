@@ -195,9 +195,13 @@ while sim.isBallMoving:
 
         cv2.circle(frame, (int(noised_position[0]), int(noised_position[1])), 10, (0,0,255), -1)
 
-        prePos, preVar = kalman_dynamic.getPredictions(100)
-        for i in range(0, len(prePos), 10):
-            cv2.ellipse(frame, (prePos[i][0], prePos[i][1]), (int(6* np.sqrt(preVar[i][0])), int(6*np.sqrt(preVar[i][1]))), 0, 0, 360, (0, 200, 255), 2)
+        prePos, preVar = kalman_dynamic.getPredictions(300)
+        for i in range(0, len(prePos), 30):
+            cv2.ellipse(frame, (prePos[i][0], prePos[i][1]), (int(4* np.sqrt(preVar[i][0])), int(4*np.sqrt(preVar[i][1]))), 0, 0, 360, (0, 200, 255), 2)
+
+        vel = np.array([kalman_dynamic.x_post[1, 0], kalman_dynamic.x_post[4, 0]])
+        vel_norm = vel / np.linalg.norm(vel)
+        cv2.arrowedLine(frame, (300, 300), (int(300 + vel_norm[0] * 100), int(300 + vel_norm[1] * 100)), (255, 255, 255))
 
         cv2.namedWindow('Pool Simulation', cv2.WINDOW_NORMAL)
         cv2.imshow("Pool Simulation", frame)
@@ -205,7 +209,6 @@ while sim.isBallMoving:
         end_ms = current_milli_time()
         execution_time_in_ms = end_ms - start_ms
         cv2.waitKey(max(int(update_time_in_secs * 1000) - execution_time_in_ms, 1))
-
     frame_no += 1
 
 

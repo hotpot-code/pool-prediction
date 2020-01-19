@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import cv2
 
 class MyFilter():
@@ -87,6 +88,9 @@ class MyFilter():
         preVar = []
         x_post_temp = self.x_post.copy()
         P_post_temp = self.P_post.copy()
+
+        can_hit_right_bank = True
+        can_hit_bottom_bank = True
         for i in range(count):
             x_post_temp = self.Ad * x_post_temp
             P_post_temp = self.Ad * P_post_temp * self.Ad.T + self.Gd * self.Q * self.Gd.T
@@ -96,4 +100,31 @@ class MyFilter():
             #predictions.append([[int(xh[0]), int(xh[1])], [int(pt[0][0]), int(pt[2][2])]])
             prePos.append([int(xhat_temp[0]), int(xhat_temp[1])])
             preVar.append([int(P_post_temp[0, 0]), int(P_post_temp[3, 3])])
+
+            vel = np.array([x_post_temp[1,0], x_post_temp[4,0]])
+            
+            if xhat_temp[0] + 25 > 1820 and can_hit_right_bank:
+                can_hit_right_bank = False
+                angle = self.py_ang(np.array([1,0]), vel)
+                rotation_angle = math.pi - 2 * angle
+                new_x = math.cos(rotation_angle) * vel[0] - math.sin(rotation_angle) * vel[1]
+                new_y = math.sin(rotation_angle) * vel[0] + math.cos(rotation_angle) * vel[1]
+                x_post_temp[1, 0] = new_x
+                x_post_temp[4, 0] = new_y
+            if xhat_temp[1] + 25 > 980 and can_hit_bottom_bank:
+                can_hit_bottom_bank = False
+                angle = self.py_ang(np.array([0,1]), vel)
+                rotation_angle = math.pi - 2 * angle
+                new_x = math.cos(rotation_angle) * vel[0] - math.sin(rotation_angle) * vel[1]
+                new_y = math.sin(rotation_angle) * vel[0] + math.cos(rotation_angle) * vel[1]
+                x_post_temp[1, 0] = new_x
+                x_post_temp[4, 0] = new_y
+                
+
         return (prePos, preVar)
+
+    def py_ang(self, v1, v2):
+        """ Returns the angle in radians between vectors 'v1' and 'v2'    """
+        cosang = np.dot(v1, v2)
+        sinang = np.linalg.norm(np.cross(v1, v2))
+        return np.arctan2(sinang, cosang)
