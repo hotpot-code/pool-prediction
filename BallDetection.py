@@ -7,26 +7,40 @@ import matplotlib.pyplot as plt
 
 class BallDetection():
 
-    def __init__(self, colorMin, colorMax, radiusMin, radiusMax):
+    def __init__(self, alpha, beta, colorMin, colorMax, radiusMin, radiusMax):
         self.colorMin = colorMin
         self.colorMax = colorMax
         self.radiusMin = radiusMin
         self.radiusMax = radiusMax
+
+        self.alpha = alpha
+        self.beta = beta
+
         self.last_x = None
         self.last_y = None
 
     def detectBall(self, frame):
+
+        #change contrast and brightness
+        contrast = cv2.convertScaleAbs(frame, alpha=self.alpha, beta=self.beta)
+        cv2.imshow("contrast", contrast)
+
         #blur image
-        blurred = cv2.GaussianBlur(frame, (5, 5), 0)
+        blurred = cv2.GaussianBlur(contrast, (5, 5), 0)
         #convert to hsv
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
+        cv2.imshow("hsv", hsv) 
 
         mask = cv2.inRange(hsv, self.colorMin, self.colorMax)
-        
+
+        cv2.imshow("mask1", mask) 
+  
         # clean mask
-        mask = cv2.erode(mask, None, iterations=1)
-        mask = cv2.dilate(mask, None, iterations=1)
+        mask = cv2.erode(mask, None, iterations=2)
+        mask = cv2.dilate(mask, None, iterations=2)
+
+        cv2.imshow("mask2", mask) 
         
         # find contours in the mask and initialize the current
         # (x, y) center of the ball
