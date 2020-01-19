@@ -141,12 +141,14 @@ process_noise = 4
 dynamic_process_noise = 8300
 kalman = MyFilter(update_time_in_secs, process_noise, noise)
 kalman_dynamic = MyFilter(update_time_in_secs, process_noise, noise)
-sim = PoolSimulation(start_velocity = start_velocity, seconds=update_time_in_secs, friction=1.3)
+sim = PoolSimulation(start_angle = -0.7, start_velocity = start_velocity, seconds=update_time_in_secs, friction=1.3)
 
 points = list()
 noised_points = list()
 filtered_points = list()
 dynamic_filtered_points = list()
+
+prePos_cached = np.array([])
 
 frame_no = 0
 while sim.isBallMoving:
@@ -195,9 +197,19 @@ while sim.isBallMoving:
 
         cv2.circle(frame, (int(noised_position[0]), int(noised_position[1])), 10, (0,0,255), -1)
 
-        prePos, preVar = kalman_dynamic.getPredictions(300)
-        for i in range(0, len(prePos), 30):
-            cv2.ellipse(frame, (prePos[i][0], prePos[i][1]), (int(4* np.sqrt(preVar[i][0])), int(4*np.sqrt(preVar[i][1]))), 0, 0, 360, (0, 200, 255), 2)
+        prePos, preVar = kalman_dynamic.getPredictions(600)
+        if not sim.isBallNearBank:
+            prePos_cached = np.array(prePos)
+            preVar_cached = np.array(preVar)
+        else:
+            if len(prePos_cached) > 0:
+                prePos_cached = np.delete(prePos_cached, 0, axis=0)
+                preVar_cached = np.delete(preVar_cached, 0, axis=0)
+
+        for i in range(0, len(prePos_cached), 10):
+            cv2.ellipse(frame, (prePos_cached[i][0], prePos_cached[i][1]), (int(4* np.sqrt(preVar_cached[i][0])), int(4*np.sqrt(preVar_cached[i][1]))), 0, 0, 360, (0, 200, 255), 2)
+        
+
 
         vel = np.array([kalman_dynamic.x_post[1, 0], kalman_dynamic.x_post[4, 0]])
         vel_norm = vel / np.linalg.norm(vel)
