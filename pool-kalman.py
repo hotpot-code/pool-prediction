@@ -4,23 +4,18 @@ import numpy as np
 import copy 
 import cv2
 import math
-import imutils
 import matplotlib.pyplot as plt
 import random
 
 from BallDetection import BallDetection 
+from VideoHandler import VideoHandler
 
 from filter.filter_constant_velocity import MyFilter
 
 kalman = MyFilter(0.01666, 600.0, 2.1)
-    
-# lower and upper boundaries of the "white"
-whiteLower = (20, 0, 150)
-whiteUpper = (45, 165, 255)
-whiteBallDetection = BallDetection(whiteLower, whiteUpper, 3, 11)
 
-# load video
-vs = cv2.VideoCapture("videos/pool_4.mp4")
+vh = VideoHandler("pool_5")
+whiteBallDetection = BallDetection(*vh.giveParameters(), 3, 11)
 
 frame_no = 0
 
@@ -30,27 +25,18 @@ last_points = deque([])
 abweichung_x = 0
 abweichung_y = 0
 
-#frame_number = 360 #pool_3 and others
-frame_number = 30 #pool_4
-
-vs.set(cv2.CAP_PROP_POS_FRAMES, frame_number-1);
-
 # keep looping
 while True:
     
-    # Get frame from video
-    frame = vs.read()
-    frame = frame[1]
+    frame = vh.giveFrames()
  
-    # if we are viewing a video and we did not grab a frame,
-    # then we have reached the end of the video
+    ## if we are viewing a video and we did not grab a frame,
+    ## then we have reached the end of the video
     if frame is None:
         break
         
-    # crop image
-    #frame = frame[60:620, 100:1150]
-    # resize image
-    frame = imutils.resize(frame, width=600)
+    ## crop and resize
+    frame = vh.cropFrame(frame)
 
     x,y = whiteBallDetection.detectBall(frame)
     x_correct = x
@@ -110,4 +96,4 @@ while True:
 cv2.waitKey(2000)
 cv2.destroyWindow("Frame")
 cv2.waitKey(2000)
-vs.release()
+vh.vs.release()

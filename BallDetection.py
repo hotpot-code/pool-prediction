@@ -7,35 +7,23 @@ import matplotlib.pyplot as plt
 
 class BallDetection():
 
-    def __init__(self, colorMin, colorMax, radiusMin, radiusMax):
+    def __init__(self, alpha, beta, colorMin, colorMax, radiusMin, radiusMax):
         self.colorMin = colorMin
         self.colorMax = colorMax
         self.radiusMin = radiusMin
         self.radiusMax = radiusMax
+
+        self.alpha = alpha
+        self.beta = beta
+
         self.last_x = None
         self.last_y = None
 
     def detectBall(self, frame):
 
-        #contrast
-        alpha = 1 # Contrast control (1.0-3.0)
-        beta = 10 # Brightness control (0-100)
-
-        #alpha = 1 # Contrast control (1.0-3.0)
-        #beta = 0 # Brightness control (0-100)
-
-        contrast = cv2.convertScaleAbs(frame, alpha=alpha, beta=beta)
+        #change contrast and brightness
+        contrast = cv2.convertScaleAbs(frame, alpha=self.alpha, beta=self.beta)
         cv2.imshow("contrast", contrast)
-
-        #saturation
-        imghsv = cv2.cvtColor(contrast, cv2.COLOR_BGR2HSV).astype("float32")
-
-        (h, s, v) = cv2.split(imghsv)
-        s = s
-        s = np.clip(s,0,255)
-        imghsv = cv2.merge([h,s,v])
-
-        imgrgb = cv2.cvtColor(imghsv.astype("uint8"), cv2.COLOR_HSV2BGR)
 
         #blur image
         blurred = cv2.GaussianBlur(contrast, (5, 5), 0)
