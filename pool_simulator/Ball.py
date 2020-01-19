@@ -4,27 +4,30 @@ import math
 
 class Ball():
 
-    def __init__(self, position, size = 2, start_velocity = 900, friction = 0.07):
+    def __init__(self, position, size = 2, start_velocity = 900, friction = 0.06):
         self.forward = np.array([0, -1])
         self.position = position
         self.size = size
         self.velocity = start_velocity
-        self.frition = friction
+        self.friction = friction
 
     def update(self, delta_time):
+        # http://web.cs.iastate.edu/~jia/papers/billiard-analysis.pdf
+        self.acceleration = -(5/7) * self.friction * 9.81
         if self.velocity > 0:
-            self.velocity += -1 * self.frition * delta_time
+            self.velocity += self.acceleration * delta_time
         else:
             self.velocity = 0
         self.moveWithVelocity(self.velocity, delta_time)
 
     def render(self, canvas):
-        cv2.circle(canvas, self.position, self.size, (255, 255, 255), -1)
+        int_position = (int(round(self.position[0])), int(round(self.position[1])))
+        cv2.circle(canvas, int_position, self.size, (255, 255, 255), -1)
 
     def moveWithVelocity(self, velocity, delta_time):
         directed_velocity = self.forward * velocity
-        new_x = self.position[0] + int(directed_velocity[0] * (delta_time / 1000))
-        new_y = self.position[1] + int(directed_velocity[1] * (delta_time / 1000))
+        new_x = self.position[0] + directed_velocity[0] * delta_time
+        new_y = self.position[1] + directed_velocity[1] * delta_time
         self.position = (new_x, new_y)
 
     def setRotation(self, angle):

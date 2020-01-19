@@ -10,7 +10,7 @@ import random
 from BallDetection import BallDetection 
 from VideoHandler import VideoHandler
 
-from filter.filter_constant_velocity import MyFilter
+from filter.filter import MyFilter
 
 kalman = MyFilter(0.01666, 600.0, 2.1)
 
@@ -42,9 +42,9 @@ while True:
     x_correct = x
     y_correct = y
 
-    if (x is not None and y is not None):
-        x = x + np.random.randn() * 2
-        y = y + np.random.randn() * 2
+    # if (x is not None and y is not None):
+    #     x = x + np.random.randn() * 2
+    #     y = y + np.random.randn() * 2
     
     if (x is not None and y is not None):
         cv2.circle(frame, (int(x), int(y)), int(20), (255, 255, 255), 2)
@@ -59,6 +59,30 @@ while True:
 
     last_point = None
     filterd = kalman.dofilter(x, y)
+
+    velocity = np.array([
+        [kalman.x_post[1]],
+        [kalman.x_post[3]]
+    ])
+    tempo = np.linalg.norm(velocity)
+    # 170cm / 600px
+    tempoPerMeter = tempo * 0.028
+    tempoRounded = int(tempoPerMeter * 100) / 100
+
+    font                   = cv2.FONT_HERSHEY_SIMPLEX
+    bottomLeftCornerOfText = (10,30)
+    fontScale              = 0.5
+    fontColor              = (255,255,255)
+    lineType               = 2
+
+    cv2.putText(frame,str(tempoRounded) + ' m/s', 
+        bottomLeftCornerOfText, 
+        font, 
+        fontScale,
+        fontColor,
+        lineType)
+
+    #print(tempo)
     last_points_filtered.append(filterd)
     if len(last_points_filtered) > 1:
         last_point = None
@@ -67,12 +91,9 @@ while True:
                 cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (0, 255, 0), 2)
             last_point = point
             
-    kalmanPrediction = copy.deepcopy(kalman)
-    last_prediction = filterd
-    for i in range(0, 50):
-        new_prediction = kalmanPrediction.dofilter(None, None)
-        cv2.line(frame, (int(last_prediction[0]),int(last_prediction[1])), (int(new_prediction[0]),int(new_prediction[1])), (0, 0, 255), 2)
-        last_prediction = new_prediction
+    prePos, preVar = kalman.getPredictions(10)
+    for i in range(0, len(prePos)):
+        cv2.ellipse(frame, (prePos[i][0], prePos[i][1]), (int(1* np.sqrt(preVar[i][0])), int(1*np.sqrt(preVar[i][1]))), 0, 0, 360, (0, 200, 255), 2)
 
     #prediction = kalman.getPredictionAfterSec(0.33)
     #cv2.line(frame, (int(filterd[0]),int(filterd[1])), (int(prediction[0]),int(prediction[1])), (0, 0, 255), 2)
