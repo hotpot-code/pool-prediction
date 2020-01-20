@@ -11,28 +11,27 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 from pool_simulator import PoolSimulation
 from filter.filter import MyFilter
 
-noise = 6.1
+noise = 1.1
 update_time_in_secs = 0.016
-process_noise = 2
-dynamic_process_noise = 800
+process_noise = 40
+dynamic_process_noise = 1200
 show_video = False
+show_plot = False
 # https://billiards.colostate.edu/faq/speed/typical/
 start_velocity = 660
 
 
 def residual(points, ground_truth):
-    sum_x = 0
-    sum_y = 0
-    for i in range(0, len(points) - 1):
+    residuals = list()
+    for i in range(0, len(points)):
         point = points[i]
         gt = ground_truth[i]
-        distance_x = (point[0] - gt[0])**2
-        distance_y = (point[1] - gt[1]) ** 2
-        sum_x += distance_x
-        sum_y += distance_y
-    mse_x = sum_x / len(points)
-    mse_y = sum_y / len(points)
-    return mse_x + mse_y
+        residuals.append((point[0] - gt[0], point[1] - gt[1]))
+    r = np.array(residuals)
+    rx = r[:,0]
+    ry = r[:,1]
+    mse = (rx ** 2 + ry ** 2).mean()
+    return mse
 
 kalman = MyFilter(update_time_in_secs, process_noise, noise)
 kalman_dynamic = MyFilter(update_time_in_secs, process_noise, noise)
@@ -142,10 +141,6 @@ while sim.isBallMoving:
         for i in range(0, len(prePos_cached), 2):
             cv2.ellipse(frame, (prePos_cached[i][0], prePos_cached[i][1]), (int(4* np.sqrt(preVar_cached[i][0])), int(4*np.sqrt(preVar_cached[i][1]))), 0, 0, 360, (0, 200, 255), 2)
         
-        if frame_no > prediction_offset:
-            prediction_10_frames_behind = prediction_10[frame_no - prediction_offset]
-            cv2.circle(frame, (int(prediction_10_frames_behind[0]), int(prediction_10_frames_behind[1])), 25, (100, 200, 80),20)
-
         cv2.namedWindow('Pool Simulation', cv2.WINDOW_NORMAL)
         cv2.imshow("Pool Simulation", frame)
         cv2.resizeWindow('Pool Simulation', 1200, 800)
@@ -191,19 +186,21 @@ for i in range(0, len(points)):
         prediction_60_residuals.append(0)
 
 
-# plt.plot(prediction_15_residuals, label='Prediction 15 frames ago')
-# plt.plot(prediction_30_residuals, label='Prediction 30 frames ago')
-# plt.plot(prediction_60_residuals, label='Prediction 60 frames ago')
-plt.boxplot([prediction_15_residuals, prediction_30_residuals, prediction_60_residuals], showfliers=False)
-# print(bank_time_span)
-# for i in range(0, len(bank_time_span)):
-#     plt.axvspan(bank_time_span[i][0], bank_time_span[i][1], color='red', alpha=0.1)
+if show_plot:
 
-plt.xlabel('frame no')
-plt.ylabel('distance to ground truth')
+    # plt.plot(prediction_15_residuals, label='Prediction 15 frames ago')
+    # plt.plot(prediction_30_residuals, label='Prediction 30 frames ago')
+    # plt.plot(prediction_60_residuals, label='Prediction 60 frames ago')
+    plt.boxplot([prediction_15_residuals, prediction_30_residuals, prediction_60_residuals], showfliers=False)
+    # print(bank_time_span)
+    # for i in range(0, len(bank_time_span)):
+    #     plt.axvspan(bank_time_span[i][0], bank_time_span[i][1], color='red', alpha=0.1)
 
-plt.title("Predictions")
+    plt.xlabel('frame no')
+    plt.ylabel('distance to ground truth')
 
-plt.legend()
+    plt.title("Predictions")
 
-plt.show()
+    plt.legend()
+
+    plt.show()
