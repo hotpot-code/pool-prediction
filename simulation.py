@@ -11,12 +11,13 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 from pool_simulator import PoolSimulation
 from filter.filter import MyFilter
 
-noise = 5
+noise = 6.1
 update_time_in_secs = 0.016
 process_noise = 5000
 dynamic_process_noise = 8000
 show_video = True
-start_velocity = 200
+# https://billiards.colostate.edu/faq/speed/typical/
+start_velocity = 660
 
 
 def residual(points, ground_truth):
@@ -130,7 +131,7 @@ min_residual = 1000000
 #         min_residual = cur_residual
 
 # process_noise = min_pn
-process_noise = 4
+process_noise = 2
 
 
 #process_noise = find_best_process_noise(noise, start_velocity, update_time_in_ms, 500, 6000)
@@ -138,10 +139,10 @@ process_noise = 4
 
 #dynamic_process_noise = find_best_dynamic_process_noise(noise, 900, update_time_in_ms, process_noise, 5000, 10000)
 
-dynamic_process_noise = 8300
+dynamic_process_noise = 800
 kalman = MyFilter(update_time_in_secs, process_noise, noise)
 kalman_dynamic = MyFilter(update_time_in_secs, process_noise, noise)
-sim = PoolSimulation(start_angle = -0.7, start_velocity = start_velocity, seconds=update_time_in_secs, friction=1.3)
+sim = PoolSimulation(start_angle = -0.7, start_velocity = start_velocity, seconds=update_time_in_secs, friction=10.3)
 
 points = list()
 noised_points = list()
@@ -149,6 +150,9 @@ filtered_points = list()
 dynamic_filtered_points = list()
 
 prePos_cached = np.array([])
+
+bank_hits = 0
+high_noise_mode = False
 
 frame_no = 0
 while sim.isBallMoving:
@@ -159,13 +163,23 @@ while sim.isBallMoving:
     noised_position = np.random.multivariate_normal(np.array(position).flatten(), R)
     #noised_position = (int(position[0] + np.random.randn() * noise), int(position[1] + np.random.randn() * noise))
 
-    if sim.isBallNearBank:
+    if sim.isBallNearBank and bank_hits < sim.bank_hits:
+        high_noise_mode = True
+        bank_hits = sim.bank_hits
+    if not sim.isBallNearBank and high_noise_mode:
+        high_noise_mode = False
+
+    if high_noise_mode:
         kalman_dynamic.setProcessNoise(dynamic_process_noise)
     else:
         kalman_dynamic.setProcessNoise(process_noise)
 
     filtered = kalman.dofilter(noised_position[0], noised_position[1])
-    filtered_dynamic = kalman_dynamic.dofilter(noised_position[0], noised_position[1])
+    # skip frames
+    if frame_no % 1 == 0:
+        filtered_dynamic = kalman_dynamic.dofilter(noised_position[0], noised_position[1])
+    else:
+        filtered_dynamic = kalman_dynamic.dofilter(None, None)
 
     noised_points.append(noised_position)
     filtered_points.append(filtered)
@@ -197,7 +211,17 @@ while sim.isBallMoving:
 
         cv2.circle(frame, (int(noised_position[0]), int(noised_position[1])), 10, (0,0,255), -1)
 
-        prePos, preVar = kalman_dynamic.getPredictions(600)
+
+        vel = np.array([kalman_dynamic.x_post[1, 0], kalman_dynamic.x_post[4, 0]])
+        vel_norm = vel / np.linalg.norm(vel)
+        cv2.arrowedLine(frame, (300, 300), (int(300 + vel_norm[0] * 100), int(300 + vel_norm[1] * 100)), (255, 255, 255))
+        tempo = np.linalg.norm(vel)
+        max_count = 50
+
+        if tempo < 100:
+            max_count = 20
+
+        prePos, preVar = kalman_dynamic.getPredictions(max_var=600, max_count=max_count)
         if not sim.isBallNearBank:
             prePos_cached = np.array(prePos)
             preVar_cached = np.array(preVar)
@@ -206,18 +230,17 @@ while sim.isBallMoving:
                 prePos_cached = np.delete(prePos_cached, 0, axis=0)
                 preVar_cached = np.delete(preVar_cached, 0, axis=0)
 
-        for i in range(0, len(prePos_cached), 10):
+        for i in range(0, len(prePos_cached), 2):
             cv2.ellipse(frame, (prePos_cached[i][0], prePos_cached[i][1]), (int(4* np.sqrt(preVar_cached[i][0])), int(4*np.sqrt(preVar_cached[i][1]))), 0, 0, 360, (0, 200, 255), 2)
         
 
 
-        vel = np.array([kalman_dynamic.x_post[1, 0], kalman_dynamic.x_post[4, 0]])
-        vel_norm = vel / np.linalg.norm(vel)
-        cv2.arrowedLine(frame, (300, 300), (int(300 + vel_norm[0] * 100), int(300 + vel_norm[1] * 100)), (255, 255, 255))
+
 
         cv2.namedWindow('Pool Simulation', cv2.WINDOW_NORMAL)
         cv2.imshow("Pool Simulation", frame)
-        cv2.resizeWindow('Pool Simulation', 1920, 1080)
+        cv2.resizeWindow('Pool Simulation', 1200, 800)
+        cv2.moveWindow('Pool Simulation', 0, 0)
         end_ms = current_milli_time()
         execution_time_in_ms = end_ms - start_ms
         cv2.waitKey(max(int(update_time_in_secs * 1000) - execution_time_in_ms, 1))
