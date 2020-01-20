@@ -13,8 +13,8 @@ from filter.filter import MyFilter
 
 noise = 6.1
 update_time_in_secs = 0.016
-process_noise = 5000
-dynamic_process_noise = 8000
+process_noise = 2
+dynamic_process_noise = 800
 show_video = True
 # https://billiards.colostate.edu/faq/speed/typical/
 start_velocity = 660
@@ -34,112 +34,6 @@ def residual(points, ground_truth):
     mse_y = sum_y / len(points)
     return mse_x + mse_y
 
-def get_residual(noise,start_velocity, update_time_in_secs, process_noise):
-    sim_test = PoolSimulation(start_velocity = start_velocity, seconds=update_time_in_secs)
-    kalman_test = MyFilter(update_time_in_secs, process_noise, noise)
-    points = list()
-    filtered_points = list()
-    while sim_test.isBallMoving:
-        frame, position, velocity = sim_test.update()
-        R = np.diag([noise, noise]) ** 2
-        noised_position = np.random.multivariate_normal(np.array(position).flatten(), R)
-        filtered = kalman_test.dofilter(noised_position[0], noised_position[1])
-        filtered_points.append(filtered)
-        points.append(position)
-    return residual(filtered_points, points)
-
-def find_best_process_noise(noise,start_velocity, update_time_in_ms, min=0, max=5000):
-    print("von " + str(min) + " bis " + str(max))
-    middle = min + (max - min) / 2
-    if middle > min + 1:
-        sim = PoolSimulation(start_velocity = start_velocity, seconds=update_time_in_secs)
-        kalman_min = MyFilter(update_time_in_ms / 1000, min, noise)
-        kalman_max = MyFilter(update_time_in_ms / 1000, max, noise)
-        points = list()
-        min_filtered_points = list()
-        max_filtered_points = list()
-
-        while sim.isBallMoving:
-            frame, position, velocity = sim.update()
-            R = np.diag([noise, noise]) ** 2
-            noised_position = np.random.multivariate_normal(np.array(position).flatten(), R)
-            min_filtered = kalman_min.dofilter(noised_position[0], noised_position[1])
-            max_filtered = kalman_max.dofilter(noised_position[0], noised_position[1])
-            min_filtered_points.append(min_filtered)
-            max_filtered_points.append(max_filtered)
-            points.append(position)
-
-        min_value = residual(min_filtered_points, points)
-        max_value = residual(max_filtered_points, points)
-        if min_value > max_value:
-            return find_best_process_noise(noise,start_velocity, update_time_in_ms, min=middle, max=max)
-        else:
-            return find_best_process_noise(noise,start_velocity, update_time_in_ms, min=min, max=middle)
-    else:
-        return min
-
-def find_best_dynamic_process_noise(noise,start_velocity, update_time_in_secs, process_noise, min=1000, max=10000):
-    print("von " + str(min) + " bis " + str(max))
-    middle = min + (max - min) / 2
-    if middle > min + 1:
-        sim = PoolSimulation(start_velocity=start_velocity, ms=update_time_in_ms)
-        kalman_min = MyFilter(update_time_in_secs, process_noise, noise)
-        kalman_max = MyFilter(update_time_in_secs, process_noise, noise)
-        points = list()
-        min_filtered_points = list()
-        max_filtered_points = list()
-
-        while sim.isBallMoving:
-            frame, position, velocity = sim.update()
-            R = np.diag([noise, noise]) ** 2
-            noised_position = np.random.multivariate_normal(np.array(position).flatten(), R)
-
-            if sim.isBallNearBank:
-                kalman_min.process_noise = min
-                kalman_max.process_noise = max
-            else:
-                kalman_min.process_noise = process_noise
-                kalman_max.process_noise = process_noise
-
-            min_filtered = kalman_min.dofilter(noised_position[0], noised_position[1])
-            max_filtered = kalman_max.dofilter(noised_position[0], noised_position[1])
-            min_filtered_points.append(min_filtered)
-            max_filtered_points.append(max_filtered)
-            points.append(position)
-
-        min_value = residual(min_filtered_points, points)
-        max_value = residual(max_filtered_points, points)
-        if min_value > max_value:
-            return find_best_process_noise(noise, start_velocity, update_time_in_ms, min=middle, max=max)
-        else:
-            return find_best_process_noise(noise, start_velocity, update_time_in_ms, min=min, max=middle)
-    else:
-        return min
-
-noise_arr = list()
-residual_arr = list()
-
-min_pn = 0
-min_residual = 1000000
-
-# pbar = trange(10000, 20000, 100)
-# for i in pbar:
-#     pbar.set_description("Processing with %s as process noise (current minimum residual: %s (%s))" % (i / 1000, min_residual, min_pn))
-#     cur_residual = get_residual(noise, start_velocity, update_time_in_secs, i / 1000)
-#     if cur_residual < min_residual:
-#         min_pn = i / 1000
-#         min_residual = cur_residual
-
-# process_noise = min_pn
-process_noise = 2
-
-
-#process_noise = find_best_process_noise(noise, start_velocity, update_time_in_ms, 500, 6000)
-#print(process_noise)
-
-#dynamic_process_noise = find_best_dynamic_process_noise(noise, 900, update_time_in_ms, process_noise, 5000, 10000)
-
-dynamic_process_noise = 800
 kalman = MyFilter(update_time_in_secs, process_noise, noise)
 kalman_dynamic = MyFilter(update_time_in_secs, process_noise, noise)
 sim = PoolSimulation(start_angle = -0.7, start_velocity = start_velocity, seconds=update_time_in_secs, friction=10.3)
@@ -233,9 +127,6 @@ while sim.isBallMoving:
         for i in range(0, len(prePos_cached), 2):
             cv2.ellipse(frame, (prePos_cached[i][0], prePos_cached[i][1]), (int(4* np.sqrt(preVar_cached[i][0])), int(4*np.sqrt(preVar_cached[i][1]))), 0, 0, 360, (0, 200, 255), 2)
         
-
-
-
 
         cv2.namedWindow('Pool Simulation', cv2.WINDOW_NORMAL)
         cv2.imshow("Pool Simulation", frame)
