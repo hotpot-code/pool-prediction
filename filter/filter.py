@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import cv2
+import copy
 
 class MyFilter():
     def __init__(self, Ts, process_noise = 1.0, sensor_noise = 0.001):
@@ -128,62 +129,17 @@ class MyFilter():
         return self.xhat
 
     def getPredictions(self, max_var=2000, max_count=500):
+
+        kalman_copy = copy.copy(self)
+
         prePos = []
         preVar = []
-        x_post_temp = self.x_post.copy()
-        P_post_temp = self.P_post.copy()
 
-        def applyRotation(rotation):
-            new_x = math.cos(rotation) * vel[0] - math.sin(rotation) * vel[1]
-            new_y = math.sin(rotation) * vel[0] + math.cos(rotation) * vel[1]
-            x_post_temp[1, 0] = new_x
-            x_post_temp[4, 0] = new_y
-
-        def resetHits():
-            can_hit_right_bank = True
-            can_hit_bottom_bank = True
-            can_hit_left_bank = True
-            can_hit_top_bank = True
-
-        can_hit_right_bank = True
-        can_hit_bottom_bank = True
-        can_hit_left_bank = True
-        can_hit_top_bank = True
-        while P_post_temp[0, 0] < max_var and len(prePos) < 500:
-            x_post_temp = self.Ad * x_post_temp
-            P_post_temp = self.Ad * P_post_temp * self.Ad.T + self.Gd * self.Q * self.Gd.T
+        while kalman_copy.P_post[0, 0] < max_var and len(prePos) < max_count:
+            kalman_copy.dofilter(None, None)
             
-            xhat_temp = np.array([x_post_temp[0,0], x_post_temp[3,0]])
-            
-            prePos.append([int(xhat_temp[0]), int(xhat_temp[1])])
-            preVar.append([int(P_post_temp[0, 0]), int(P_post_temp[3, 3])])
-
-            vel = np.array([x_post_temp[1,0], x_post_temp[4,0]])
-            
-            if xhat_temp[0] + 25 > 1820 and can_hit_right_bank:
-                resetHits()
-                can_hit_right_bank = False
-                angle = self.py_ang(np.array([1,0]), vel)
-                rotation_angle = math.pi - 2 * angle
-                applyRotation(rotation_angle)
-            if xhat_temp[1] + 25 > 980 and can_hit_bottom_bank:
-                resetHits()
-                can_hit_bottom_bank = False
-                angle = self.py_ang(np.array([0,1]), vel)
-                rotation_angle = math.pi - 2 * angle
-                applyRotation(rotation_angle)
-            if xhat_temp[1] - 25 < 100 and can_hit_top_bank:
-                resetHits()
-                can_hit_top_bank = False
-                angle = self.py_ang(np.array([0,-1]), vel)
-                rotation_angle = math.pi - 2 * angle
-                applyRotation(rotation_angle)
-            if xhat_temp[0] - 25 < 100 and can_hit_left_bank:
-                resetHits()
-                can_hit_left_bank = False
-                angle = self.py_ang(np.array([-1,0]), vel)
-                rotation_angle = math.pi - 2 * angle
-                applyRotation(rotation_angle)
+            prePos.append([int(kalman_copy.xhat[0]), int(kalman_copy.xhat[1])])
+            preVar.append([int(kalman_copy.P_post[0, 0]), int(kalman_copy.P_post[3, 3])])
   
             
         return (prePos, preVar)
