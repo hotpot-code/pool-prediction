@@ -15,7 +15,7 @@ noise = 6.1
 update_time_in_secs = 0.016
 process_noise = 2
 dynamic_process_noise = 800
-show_video = True
+show_video = False
 # https://billiards.colostate.edu/faq/speed/typical/
 start_velocity = 660
 
@@ -42,11 +42,18 @@ points = list()
 noised_points = list()
 filtered_points = list()
 dynamic_filtered_points = list()
+prediction_15 = list()
+prediction_30 = list()
+prediction_60 = list()
+bank_time_span = list()
 
 prePos_cached = np.array([])
 
 bank_hits = 0
 high_noise_mode = False
+
+bank_start_frame = 0
+near_bank = False
 
 frame_no = 0
 while sim.isBallMoving:
@@ -56,6 +63,15 @@ while sim.isBallMoving:
     R = np.diag([noise, noise]) ** 2
     noised_position = np.random.multivariate_normal(np.array(position).flatten(), R)
     #noised_position = (int(position[0] + np.random.randn() * noise), int(position[1] + np.random.randn() * noise))
+
+    if sim.isBallNearBank:
+        if not near_bank:
+            bank_start_frame = frame_no
+        near_bank = True
+    else:
+        if near_bank:
+            bank_time_span.append((bank_start_frame, frame_no))
+        near_bank = False
 
     if sim.isBallNearBank and bank_hits < sim.bank_hits:
         high_noise_mode = True
@@ -79,6 +95,11 @@ while sim.isBallMoving:
     filtered_points.append(filtered)
     points.append(position)
     dynamic_filtered_points.append(filtered_dynamic)
+
+    prePos, preVar = kalman_dynamic.getPredictions(max_var=60000, max_count=100)
+    prediction_15.append(prePos[14])
+    prediction_30.append(prePos[29])
+    prediction_60.append(prePos[59])
 
     if show_video:
         if len(noised_points) > 1:
@@ -109,13 +130,7 @@ while sim.isBallMoving:
         vel = np.array([kalman_dynamic.x_post[1, 0], kalman_dynamic.x_post[4, 0]])
         vel_norm = vel / np.linalg.norm(vel)
         cv2.arrowedLine(frame, (300, 300), (int(300 + vel_norm[0] * 100), int(300 + vel_norm[1] * 100)), (255, 255, 255))
-        tempo = np.linalg.norm(vel)
-        max_count = 50
 
-        if tempo < 100:
-            max_count = 20
-
-        prePos, preVar = kalman_dynamic.getPredictions(max_var=600, max_count=max_count)
         if not sim.isBallNearBank:
             prePos_cached = np.array(prePos)
             preVar_cached = np.array(preVar)
@@ -127,6 +142,9 @@ while sim.isBallMoving:
         for i in range(0, len(prePos_cached), 2):
             cv2.ellipse(frame, (prePos_cached[i][0], prePos_cached[i][1]), (int(4* np.sqrt(preVar_cached[i][0])), int(4*np.sqrt(preVar_cached[i][1]))), 0, 0, 360, (0, 200, 255), 2)
         
+        if frame_no > prediction_offset:
+            prediction_10_frames_behind = prediction_10[frame_no - prediction_offset]
+            cv2.circle(frame, (int(prediction_10_frames_behind[0]), int(prediction_10_frames_behind[1])), 25, (100, 200, 80),20)
 
         cv2.namedWindow('Pool Simulation', cv2.WINDOW_NORMAL)
         cv2.imshow("Pool Simulation", frame)
@@ -147,13 +165,45 @@ print(10 * np.log10(residual(dynamic_filtered_points, points)))
 print("no filter: ")
 print(10 * np.log10(residual(noised_points, points)))
 
-# plt.plot(noise_arr, residual_arr, label='residual')
-#
-# plt.xlabel('process noise')
-# plt.ylabel('residual')
-#
-# plt.title("Simple Plot")
-#
-# plt.legend()
+prediction_15_residuals = list()
+prediction_30_residuals = list()
+prediction_60_residuals = list()
+
+for i in range(0, len(points)):
+    gt = points[i]
+    if i >= 15:
+        prediction = prediction_15[i - 15]
+        distance = math.sqrt((prediction[0] - gt[0])**2 + (prediction[1] - gt[1])**2)
+        prediction_15_residuals.append(distance)
+    else:
+        prediction_15_residuals.append(0)
+    if i >= 30:
+        prediction = prediction_30[i - 30]
+        distance = math.sqrt((prediction[0] - gt[0])**2 + (prediction[1] - gt[1])**2)
+        prediction_30_residuals.append(distance)
+    else:
+        prediction_30_residuals.append(0)
+    if i >= 60:
+        prediction = prediction_60[i - 60]
+        distance = math.sqrt((prediction[0] - gt[0])**2 + (prediction[1] - gt[1])**2)
+        prediction_60_residuals.append(distance)
+    else:
+        prediction_60_residuals.append(0)
+
+
+# plt.plot(prediction_15_residuals, label='Prediction 15 frames ago')
+# plt.plot(prediction_30_residuals, label='Prediction 30 frames ago')
+# plt.plot(prediction_60_residuals, label='Prediction 60 frames ago')
+plt.boxplot([prediction_15_residuals, prediction_30_residuals, prediction_60_residuals], showfliers=False)
+# print(bank_time_span)
+# for i in range(0, len(bank_time_span)):
+#     plt.axvspan(bank_time_span[i][0], bank_time_span[i][1], color='red', alpha=0.1)
+
+plt.xlabel('frame no')
+plt.ylabel('distance to ground truth')
+
+plt.title("Predictions")
+
+plt.legend()
 
 plt.show()
