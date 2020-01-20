@@ -14,7 +14,7 @@ class Ball():
     def update(self, delta_time):
         # http://web.cs.iastate.edu/~jia/papers/billiard-analysis.pdf
         self.acceleration = -(5/7) * self.friction * 9.81
-        if self.velocity > 0:
+        if self.velocity > 20:
             self.velocity += self.acceleration * delta_time
         else:
             self.velocity = 0
