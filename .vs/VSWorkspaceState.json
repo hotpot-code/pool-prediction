@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\filter",
+    "\\pool_simulator",
+    "\\videos"
   ],
   "SelectedNode": "\\simulation.py",
   "PreviewInSolutionExplorer": false
