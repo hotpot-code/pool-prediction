@@ -70,14 +70,58 @@ class MyFilter():
                 [y1],
                 [y2]
             ])
+            self.x_post = x_prior + K * (y - self.C * x_prior)
+            self.P_post = (np.eye(6) - K * self.C) * P_prior
         else:
-            y =  self.C * x_prior
+            self.x_post = x_prior
+            self.P_post = P_prior
         
-        self.x_post = x_prior + K * (y - self.C * x_prior)
-        self.P_post = (np.eye(6) - K * self.C) * P_prior
-                        
         # Schätzung der Systemmesswerte
         self.xhat = np.array([self.x_post[0,0], self.x_post[3,0]])
+
+        def applyRotation(rotation):
+            new_x = math.cos(rotation) * vel[0] - math.sin(rotation) * vel[1]
+            new_y = math.sin(rotation) * vel[0] + math.cos(rotation) * vel[1]
+            self.x_post[1, 0] = new_x
+            self.x_post[4, 0] = new_y
+
+        def resetHits():
+            can_hit_right_bank = True
+            can_hit_bottom_bank = True
+            can_hit_left_bank = True
+            can_hit_top_bank = True
+
+        can_hit_right_bank = True
+        can_hit_bottom_bank = True
+        can_hit_left_bank = True
+        can_hit_top_bank = True
+
+        vel = np.array([self.x_post[1,0], self.x_post[4,0]])
+        
+        if self.xhat[0] + 25 > 1820 and can_hit_right_bank:
+            resetHits()
+            can_hit_right_bank = False
+            angle = self.py_ang(np.array([1,0]), vel)
+            rotation_angle = math.pi - 2 * angle
+            applyRotation(rotation_angle)
+        if self.xhat[1] + 25 > 980 and can_hit_bottom_bank:
+            resetHits()
+            can_hit_bottom_bank = False
+            angle = self.py_ang(np.array([0,1]), vel)
+            rotation_angle = math.pi - 2 * angle
+            applyRotation(rotation_angle)
+        if self.xhat[1] - 25 < 100 and can_hit_top_bank:
+            resetHits()
+            can_hit_top_bank = False
+            angle = self.py_ang(np.array([0,-1]), vel)
+            rotation_angle = math.pi - 2 * angle
+            applyRotation(rotation_angle)
+        if self.xhat[0] - 25 < 100 and can_hit_left_bank:
+            resetHits()
+            can_hit_left_bank = False
+            angle = self.py_ang(np.array([-1,0]), vel)
+            rotation_angle = math.pi - 2 * angle
+            applyRotation(rotation_angle)
 
         #self.xhat = y1_xy
         
