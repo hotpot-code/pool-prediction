@@ -12,9 +12,9 @@ from VideoHandler import VideoHandler
 
 from filter.filter import MyFilter
 
-kalman = MyFilter(0.01666, 600.0, 2.1)
+kalman = MyFilter(0.01666, 600.0, 0.001)
 
-vh = VideoHandler("pool_5")
+vh = VideoHandler("pool_3")
 whiteBallDetection = BallDetection(*vh.giveParameters())
 
 frame_no = 0
@@ -29,7 +29,25 @@ abweichung_y = 0
 while True:
     
     frame = vh.giveFrames()
- 
+    
+    # draw lines for debug (pool_3)
+
+    #origin (0,0) top left
+    x_close = 35
+    x_far = 1245
+    y_close = 38
+    y_far = 685
+
+    p1 = (x_close,y_close) #top left
+    p2 = (x_far, y_close) #top right
+    p3 = (x_far, y_far) # bottom right
+    p4 = (x_close,y_far) # bottom left
+
+    cv2.line(frame, p1, p2, (255, 255, 255), 2) #top bank
+    cv2.line(frame, p2, p3, (255, 255, 255), 2) #right bank
+    cv2.line(frame, p3, p4, (255, 255, 255), 2) #bottom bank
+    cv2.line(frame, p4, p1, (255, 255, 255), 2) #left bank 
+
     ## if we are viewing a video and we did not grab a frame,
     ## then we have reached the end of the video
     if frame is None:
