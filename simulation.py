@@ -169,17 +169,19 @@ class Simulation():
         #csv file headline
         print("process_noise; dynamic_process_noise; dynamic_db; filter_db; no_filter_db; best_db; best_process_noise; best_dynamic_process_noise")
 
-        with tqdm(total=(len(outer_range) * len(inner_range))) as pbar:
-            for process_noise in outer_range:
-                for dynamic_process_noise in inner_range:
-                    #pbar.set_description("Testing with pn=%d and dpn=%d! Current best: %fdB with pn=%d and dpn=%d" % (process_noise, dynamic_process_noise, best_db, best_process_noise, best_dynamic_process_noise))                    
-                    dynamic_db, filter_db, no_filter_db = self.run(process_noise, dynamic_process_noise, save_prediction=False)
-                    if dynamic_db < best_db:
-                        best_db = dynamic_db
-                        best_process_noise = process_noise
-                        best_dynamic_process_noise = dynamic_process_noise
-                    #pbar.update(1)
-                    print(process_noise + ";" + dynamic_process_noise + ";" + dynamic_db + ";" + filter_db + ";" + no_filter_db + ";" + best_db + ";" + best_process_noise + ";" + best_dynamic_process_noise)
+        #with tqdm(total=(len(outer_range) * len(inner_range))) as pbar:
+        for process_noise in outer_range:
+            for dynamic_process_noise in inner_range:
+                #pbar.set_description("Testing with pn=%d and dpn=%d! Current best: %fdB with pn=%d and dpn=%d" % (process_noise, dynamic_process_noise, best_db, best_process_noise, best_dynamic_process_noise))                    
+                dynamic_db, filter_db, no_filter_db = self.run(process_noise, dynamic_process_noise, save_prediction=False)
+                if dynamic_db < best_db:
+                    best_db = dynamic_db
+                    best_process_noise = process_noise
+                    best_dynamic_process_noise = dynamic_process_noise
+                #pbar.update(1)
+                #tpl = (process_noise,dynamic_process_noise,dynamic_db,filter_db,no_filter_db,best_db,best_process_noise,best_dynamic_process_noise)
+                #print(";".join(tpl))
+                print("%f;%f;%f;%f;%f;%f;%d;%d" % (process_noise,dynamic_process_noise,dynamic_db,filter_db,no_filter_db,best_db,best_process_noise,best_dynamic_process_noise))
         
         print("Found best process noise for simulation with noise=%f and start_velocity=%f! Best: %fdB with pn=%d and dpn=%d" % (self.noise, self.start_velocity, best_db, best_process_noise, best_dynamic_process_noise))
         return (best_process_noise, best_dynamic_process_noise)
