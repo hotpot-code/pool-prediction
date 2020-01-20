@@ -128,14 +128,14 @@ class MyFilter():
         
         return self.xhat
 
-    def getPredictions(self, max_var=2000, max_count=500):
+    def getPredictions(self, max_count=500):
 
         kalman_copy = copy.copy(self)
 
         prePos = []
         preVar = []
 
-        while kalman_copy.P_post[0, 0] < max_var and len(prePos) < max_count:
+        while len(prePos) < max_count:
             kalman_copy.dofilter(None, None)
             
             prePos.append([int(kalman_copy.xhat[0]), int(kalman_copy.xhat[1])])
