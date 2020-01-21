@@ -60,7 +60,7 @@ class MyFilter():
         # Prozessrauschen
         self.Q = np.eye(2) * self.process_noise ** 2
 
-    def dofilter(self, y1, y2, radius):
+    def dofilter(self, y1, y2, radius=11):
         #Hier bitte Ihre Filterimplementierung
         
         # x priori

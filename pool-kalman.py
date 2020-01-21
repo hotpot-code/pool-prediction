@@ -20,7 +20,7 @@ p3 = (vh.xRight, vh.yBot) # bottom right
 p4 = (vh.xLeft, vh.yBot) # bottom left
 
 #kalman = MyFilter(0.01666, 600.0, 0.001) 
-kalman = MyFilter(0.01666, 1000, 0.001)
+kalman = MyFilter(0.016, 1000, 0.001)
 
 kalman.setBoundaries(vh.xLeft, vh.xRight, vh.yTop, vh.yBot)
 
@@ -103,7 +103,7 @@ while True:
                 cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (0, 255, 0), 2)
             last_point = point
             
-    prePos, preVar = kalman.getPredictions(30, radius)
+    prePos, preVar = kalman.getPredictions(60, radius)
     for i in range(0, len(prePos)):
         cv2.ellipse(frame, (prePos[i][0], prePos[i][1]), (int(1* np.sqrt(preVar[i][0])), int(1*np.sqrt(preVar[i][1]))), 0, 0, 360, (0, 200, 255), 2)
 
