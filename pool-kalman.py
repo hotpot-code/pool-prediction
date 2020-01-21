@@ -77,7 +77,8 @@ while True:
     ])
     tempo = np.linalg.norm(velocity)
     # 170cm / 600px
-    tempoPerMeter = tempo * 0.028
+    #JN: 9' Table: Inner boundary: 254cm @ 654px -> 0.0045 px/m
+    tempoPerMeter = tempo * 0.0045 #former 0.028
     tempoRounded = int(tempoPerMeter * 100) / 100
 
     font                   = cv2.FONT_HERSHEY_SIMPLEX
