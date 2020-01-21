@@ -49,12 +49,18 @@ class MyFilter():
             [0, 0, 0, 1, 0, 0]
         ])
 
+    def setBoundaries(self, xLeft, xRight, yTop, yBot):
+        self.xLeft = xLeft
+        self.xRight = xRight
+        self.yTop = yTop
+        self.yBot = yBot
+
     def setProcessNoise(self, process_noise):
         self.process_noise = process_noise
         # Prozessrauschen
         self.Q = np.eye(2) * self.process_noise ** 2
 
-    def dofilter(self, y1, y2):
+    def dofilter(self, y1, y2, radius):
         #Hier bitte Ihre Filterimplementierung
         
         # x priori
@@ -87,37 +93,39 @@ class MyFilter():
             self.x_post[4, 0] = new_y
 
         def resetHits():
-            can_hit_right_bank = True
-            can_hit_bottom_bank = True
-            can_hit_left_bank = True
-            can_hit_top_bank = True
+            self.can_hit_right_bank = True
+            self.can_hit_bottom_bank = True
+            self.can_hit_left_bank = True
+            self.can_hit_top_bank = True
 
-        can_hit_right_bank = True
-        can_hit_bottom_bank = True
-        can_hit_left_bank = True
-        can_hit_top_bank = True
+        #can_hit_right_bank = True
+        #can_hit_bottom_bank = True
+        #can_hit_left_bank = True
+        #can_hit_top_bank = True
+
+        resetHits()
 
         vel = np.array([self.x_post[1,0], self.x_post[4,0]])
         
-        if self.xhat[0] + 25 > 1820 and can_hit_right_bank:
+        if self.xhat[0] + radius > self.xRight and self.can_hit_right_bank:
             resetHits()
             can_hit_right_bank = False
             angle = self.py_ang(np.array([1,0]), vel)
             rotation_angle = math.pi - 2 * angle
             applyRotation(rotation_angle)
-        if self.xhat[1] + 25 > 980 and can_hit_bottom_bank:
+        if self.xhat[1] + radius > self.yBot and self.can_hit_bottom_bank:
             resetHits()
             can_hit_bottom_bank = False
             angle = self.py_ang(np.array([0,1]), vel)
             rotation_angle = math.pi - 2 * angle
             applyRotation(rotation_angle)
-        if self.xhat[1] - 25 < 100 and can_hit_top_bank:
+        if self.xhat[1] - radius < self.yTop and self.can_hit_top_bank:
             resetHits()
             can_hit_top_bank = False
             angle = self.py_ang(np.array([0,-1]), vel)
             rotation_angle = math.pi - 2 * angle
             applyRotation(rotation_angle)
-        if self.xhat[0] - 25 < 100 and can_hit_left_bank:
+        if self.xhat[0] - radius < self.xLeft and self.can_hit_left_bank:
             resetHits()
             can_hit_left_bank = False
             angle = self.py_ang(np.array([-1,0]), vel)
@@ -128,7 +136,7 @@ class MyFilter():
         
         return self.xhat
 
-    def getPredictions(self, max_count=500):
+    def getPredictions(self, max_count=500, radius=9):
 
         kalman_copy = copy.copy(self)
 
@@ -136,7 +144,7 @@ class MyFilter():
         preVar = []
 
         while len(prePos) < max_count:
-            kalman_copy.dofilter(None, None)
+            kalman_copy.dofilter(None, None, radius)
             
             prePos.append([int(kalman_copy.xhat[0]), int(kalman_copy.xhat[1])])
             preVar.append([int(kalman_copy.P_post[0, 0]), int(kalman_copy.P_post[3, 3])])

@@ -18,6 +18,12 @@ class VideoHandler():
             self.radiusMin = 3
             self.radiusMax = 11
 
+            #Origin (0,0) #  tbd
+            self.xTop = 35
+            self.xBot = 1245
+            self.yLeft = 38
+            self.yRight = 685
+
         elif name =="pool_3":
             self.alpha = 1 # Contrast control (1.0-3.0)
             self.beta = 10 # Brightness control (0-100)
@@ -27,6 +33,12 @@ class VideoHandler():
             self.radiusMin = 3
             self.radiusMax = 11
 
+            #Origin (0,0)
+            self.xLeft = 18
+            self.xRight = 582
+            self.yTop = 20
+            self.yBot = 320
+
         elif name == "pool_4":
             self.alpha = 1 # Contrast control (1.0-3.0)
             self.beta = 10 # Brightness control (0-100)
@@ -35,6 +47,12 @@ class VideoHandler():
             self.frame_number = 30 #start
             self.radiusMin = 3
             self.radiusMax = 11
+
+            #origin (0,0)
+            self.xLeft = 18
+            self.xRight = 582
+            self.yTop = 20
+            self.yBot = 320
 
         elif name == "pool_5":
             self.alpha = 0.9 # Contrast control (1.0-3.0)
@@ -47,7 +65,13 @@ class VideoHandler():
             self.radiusMin = 3
             self.radiusMax = 11
 
-        else: #default: Pool
+            #Origin (0,0)
+            self.xLeft = 18
+            self.xRight = 582
+            self.yTop = 20
+            self.yBot = 320
+
+        else: #default: Pool 
             self.name = "pool"
             self.whiteLower = (15, 30, 1)
             self.whiteUpper = (30, 105, 255)
@@ -56,6 +80,12 @@ class VideoHandler():
             self.frame_number = 1 #start
             self.radiusMin = 3
             self.radiusMax = 11
+
+            #Origin (0,0) # tbd
+            self.xTop = 35
+            self.xBot = 1245
+            self.yLeft = 38
+            self.yRight = 685
 
         #self.whiteBallDetection = BallDetection(whiteLower, whiteUpper, 3, 11)
         self.vs = cv2.VideoCapture("videos/" + name + ".mp4")
