@@ -4,6 +4,7 @@ import copy
 import math
 import matplotlib.pyplot as plt
 from tqdm import tqdm, trange
+import sys
 
 import time
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -225,14 +226,13 @@ class Simulation():
         plt.show()
 
 
-testing_noise = [2.0, 5.0, 10.0]
-testing_start_velocity = [700, 500, 300]
-testing_fps = [60, 30, 10]
 
-for noise in testing_noise:
-    for start_velocity in testing_start_velocity:
-        for fps in testing_fps:
-            print("Starting first Test with noise=%f and start_velocity=%f and fps=%d" % (noise, start_velocity, fps))
-            sim = Simulation(noise=noise, start_velocity=start_velocity, update_time_in_secs=(1.0/fps))
-            sim.find_best_process_noise()
+testing_noise = float(sys.argv[1])
+testing_start_velocity = float(sys.argv[2])
+testing_fps = float(sys.argv[3])
+
+
+print("Starting first Test with noise=%f and start_velocity=%f and fps=%d" % (testing_noise, testing_start_velocity, testing_fps))
+sim = Simulation(noise=testing_noise, start_velocity=testing_start_velocity, update_time_in_secs=(1.0/testing_fps))
+sim.find_best_process_noise()
 
