@@ -10,6 +10,7 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 
 from pool_simulator import PoolSimulation
 from filter.filter import MyFilter
+from filter.filter_constant_acceleration import CAM_Filter
 
 class Simulation():
 
@@ -42,12 +43,14 @@ class Simulation():
         return mse
 
     def run(self, process_noise = 20, dynamic_process_noise = 800, show_video = False, save_prediction = True):
+        kalman_cam = CAM_Filter(self.update_time_in_secs, process_noise, self.noise)
         kalman = MyFilter(self.update_time_in_secs, process_noise, self.noise)
         kalman_dynamic = MyFilter(self.update_time_in_secs, process_noise, self.noise)
         sim = PoolSimulation(start_angle = -0.7, start_velocity = self.start_velocity, seconds=self.update_time_in_secs, friction=10.3)
 
         self.points = list()
         noised_points = list()
+        cam_points = list()
         filtered_points = list()
         dynamic_filtered_points = list()
 
@@ -89,6 +92,7 @@ class Simulation():
                 kalman_dynamic.setProcessNoise(process_noise)
 
             filtered = kalman.dofilter(noised_position[0], noised_position[1])
+            cam_filtered = kalman_cam.dofilter(noised_position[0], noised_position[1])
             # skip frames
             if frame_no % 1 == 0:
                 filtered_dynamic = kalman_dynamic.dofilter(noised_position[0], noised_position[1])
@@ -96,12 +100,13 @@ class Simulation():
                 filtered_dynamic = kalman_dynamic.dofilter(None, None)
 
             noised_points.append(noised_position)
+            cam_points.append(cam_filtered)
             filtered_points.append(filtered)
             self.points.append(position)
             dynamic_filtered_points.append(filtered_dynamic)
 
             if save_prediction:
-                prePos, preVar = kalman_dynamic.getPredictions(max_count=60)
+                prePos, preVar = kalman_cam.getPredictions(max_count=60)
                 self.prediction_15.append(prePos[14])
                 self.prediction_30.append(prePos[29])
                 self.prediction_60.append(prePos[59])
@@ -114,11 +119,18 @@ class Simulation():
                             cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (0,0,255), 2)
                         last_point = point
 
+                if len(filtered_points) > 1:
+                    last_point = None
+                    for point in filtered_points:
+                        if last_point is not None:
+                            cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (255,255,255), 2)
+                        last_point = point
+
                 if len(dynamic_filtered_points) > 1:
                     last_point = None
                     for point in dynamic_filtered_points:
                         if last_point is not None:
-                            cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (255,255,255), 2)
+                            cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (255,0,0), 2)
                         last_point = point
 
                 if len(self.points) > 1:
@@ -127,6 +139,14 @@ class Simulation():
                         if last_point is not None:
                             cv2.line(frame, (int(last_point[0]), int(last_point[1])), (int(point[0]), int(point[1])),
                                     (0, 255, 0), 2)
+                        last_point = point
+                
+                if len(cam_points) > 1:
+                    last_point = None
+                    for point in cam_points:
+                        if last_point is not None:
+                            cv2.line(frame, (int(last_point[0]), int(last_point[1])), (int(point[0]), int(point[1])),
+                                    (0, 255, 100), 2)
                         last_point = point
 
                 cv2.circle(frame, (int(noised_position[0]), int(noised_position[1])), 10, (0,0,255), -1)
@@ -155,8 +175,13 @@ class Simulation():
                 execution_time_in_ms = end_ms - start_ms
                 cv2.waitKey(max(int(self.update_time_in_secs * 1000) - execution_time_in_ms, 1))
             frame_no += 1
-        
-        return (10 * np.log10(self.residual(dynamic_filtered_points, self.points)), 10 * np.log10(self.residual(filtered_points, self.points)), 10 * np.log10(self.residual(noised_points, self.points)))
+
+        dynamic_mse = 10 * np.log10(self.residual(dynamic_filtered_points, self.points))
+        cam_mse = 10 * np.log10(self.residual(cam_points, self.points))
+        filter_mse = 10 * np.log10(self.residual(filtered_points, self.points)) 
+        no_filter_mse = 10 * np.log10(self.residual(noised_points, self.points))
+
+        return (cam_mse, dynamic_mse, filter_mse, no_filter_mse)
 
     def find_best_process_noise(self, process_noise_range = (0, 30), process_noise_step = 0.1, dynamic_process_noise_range = (500, 1200), dynamic_process_noise_step = 10):
         best_process_noise = 0
@@ -229,10 +254,15 @@ testing_noise = [2.0, 5.0, 10.0]
 testing_start_velocity = [700, 500, 300]
 testing_fps = [60, 30, 10]
 
-for noise in testing_noise:
-    for start_velocity in testing_start_velocity:
-        for fps in testing_fps:
-            print("Starting first Test with noise=%f and start_velocity=%f and fps=%d" % (noise, start_velocity, fps))
-            sim = Simulation(noise=noise, start_velocity=start_velocity, update_time_in_secs=(1.0/fps))
-            sim.find_best_process_noise()
+sim = Simulation(noise=2.0, start_velocity=500, update_time_in_secs=(1.0/60))
+cam_mse, dynamic_mse, filter_mse, no_filter_mse = sim.run(process_noise = 1000, show_video=False)
+
+print("CAM %fdB Dynmaic %fdB No Dynamic %fdB No Filter %fdB" % (cam_mse, dynamic_mse, filter_mse, no_filter_mse))
+
+# for noise in testing_noise:
+#     for start_velocity in testing_start_velocity:
+#         for fps in testing_fps:
+#             print("Starting first Test with noise=%f and start_velocity=%f and fps=%d" % (noise, start_velocity, fps))
+#             sim = Simulation(noise=noise, start_velocity=start_velocity, update_time_in_secs=(1.0/fps))
+#             sim.find_best_process_noise()
 
