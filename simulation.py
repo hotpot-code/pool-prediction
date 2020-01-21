@@ -91,11 +91,11 @@ class Simulation():
             else:
                 kalman_dynamic.setProcessNoise(process_noise)
 
-            filtered = kalman.dofilter(noised_position[0], noised_position[1])
-            cam_filtered = kalman_cam.dofilter(noised_position[0], noised_position[1])
+            filtered = kalman.dofilter(noised_position[0], noised_position[1]) # mit vektor drehen
+            cam_filtered = kalman_cam.dofilter(noised_position[0], noised_position[1]) #ohne vektor drehen
             # skip frames
             if frame_no % 1 == 0:
-                filtered_dynamic = kalman_dynamic.dofilter(noised_position[0], noised_position[1])
+                filtered_dynamic = kalman_dynamic.dofilter(noised_position[0], noised_position[1]) #mit vektor drehen und dynamisch
             else:
                 filtered_dynamic = kalman_dynamic.dofilter(None, None)
 
