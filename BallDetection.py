@@ -67,10 +67,10 @@ class BallDetection():
             if radius > self.radiusMin and radius < self.radiusMax:
                 self.last_x = x
                 self.last_y = y
-                return (x,y)
+                return (x,y, radius)
         
         self.last_x = None
         self.last_y = None
-        return (None, None)
+        return (None, None, 0)
     
 
