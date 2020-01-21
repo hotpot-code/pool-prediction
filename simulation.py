@@ -23,10 +23,9 @@ class Simulation():
         self.show_video = False
 
         self.points = list()
-        self.prediction_15 = list()
-        self.prediction_30 = list()
-        self.prediction_60 = list()
+        self.mse_list = list()
         self.bank_time_span = list()
+        self.filter_predictions = list()
 
 
 
@@ -42,23 +41,23 @@ class Simulation():
         mse = (rx ** 2 + ry ** 2).mean()
         return mse
 
-    def run(self, process_noise = 20, dynamic_process_noise = 800, show_video = False, save_prediction = True):
-        kalman_cam = CAM_Filter(self.update_time_in_secs, process_noise, self.noise)
-        kalman = MyFilter(self.update_time_in_secs, process_noise, self.noise)
-        kalman_dynamic = MyFilter(self.update_time_in_secs, process_noise, self.noise)
+    def run(self, filters, process_noise = 20, dynamic_process_noise = 800, show_video = False, save_prediction = True, show_prediction=0):
+        
         sim = PoolSimulation(start_angle = -0.7, start_velocity = self.start_velocity, seconds=self.update_time_in_secs, friction=10.3)
 
         self.points = list()
         noised_points = list()
-        cam_points = list()
-        filtered_points = list()
-        dynamic_filtered_points = list()
 
-        prePos_cached = np.array([])
+        filter_points = list()
+        for i in range(0, len(filters)):
+            filter_points.append(list())
+
+        self.filter_predictions = list()
+        for i in range(0, len(filters)):
+            self.filter_predictions.append(list())
+
 
         bank_hits = 0
-        high_noise_mode = False
-
         bank_start_frame = 0
         near_bank = False
 
@@ -66,10 +65,8 @@ class Simulation():
         while sim.isBallMoving:
             start_ms = current_milli_time()
             frame, position, velocity = sim.update()
-            #cv2.line(frame, position, (position[0] + velocity[0], position[1] + velocity[1]), (255,0,0), 4)
             R = np.diag([self.noise, self.noise]) ** 2
             noised_position = np.random.multivariate_normal(np.array(position).flatten(), R)
-            #noised_position = (int(position[0] + np.random.randn() * noise), int(position[1] + np.random.randn() * noise))
 
             if sim.isBallNearBank:
                 if not near_bank:
@@ -80,58 +77,28 @@ class Simulation():
                     self.bank_time_span.append((bank_start_frame, frame_no))
                 near_bank = False
 
-            if sim.isBallNearBank and bank_hits < sim.bank_hits:
-                high_noise_mode = True
-                bank_hits = sim.bank_hits
-            if not sim.isBallNearBank and high_noise_mode:
-                high_noise_mode = False
-
-            if high_noise_mode:
-                kalman_dynamic.setProcessNoise(dynamic_process_noise)
-            else:
-                kalman_dynamic.setProcessNoise(process_noise)
-
-            filtered = kalman.dofilter(noised_position[0], noised_position[1])
-            cam_filtered = kalman_cam.dofilter(noised_position[0], noised_position[1])
-            # skip frames
-            if frame_no % 1 == 0:
-                filtered_dynamic = kalman_dynamic.dofilter(noised_position[0], noised_position[1])
-            else:
-                filtered_dynamic = kalman_dynamic.dofilter(None, None)
+            for i, custom_filter in enumerate(filters):
+                filter_points[i].append(custom_filter.dofilter(noised_position[0], noised_position[1]))
 
             noised_points.append(noised_position)
-            cam_points.append(cam_filtered)
-            filtered_points.append(filtered)
             self.points.append(position)
-            dynamic_filtered_points.append(filtered_dynamic)
 
             if save_prediction:
-                prePos, preVar = kalman_cam.getPredictions(max_count=60)
-                self.prediction_15.append(prePos[14])
-                self.prediction_30.append(prePos[29])
-                self.prediction_60.append(prePos[59])
+                for i, custom_filter in enumerate(filters):
+                    self.filter_predictions[i].append([])
+                    pre_pos, pre_var = custom_filter.getPredictions(max_count=60)
+                    self.filter_predictions[i][len(self.filter_predictions[i]) - 1] = [pre_pos, pre_var]
 
             if show_video:
-                if len(noised_points) > 1:
-                    last_point = None
-                    for point in noised_points:
-                        if last_point is not None:
-                            cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (0,0,255), 2)
-                        last_point = point
-
-                if len(filtered_points) > 1:
-                    last_point = None
-                    for point in filtered_points:
-                        if last_point is not None:
-                            cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (255,255,255), 2)
-                        last_point = point
-
-                if len(dynamic_filtered_points) > 1:
-                    last_point = None
-                    for point in dynamic_filtered_points:
-                        if last_point is not None:
-                            cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), (255,0,0), 2)
-                        last_point = point
+                
+                colors = [(255,255,0),(0,255,255), (255,0,255)]
+                for i, filter_point in enumerate(filter_points):
+                    if len(filter_point) > 1:
+                        last_point = None
+                        for point in filter_point:
+                            if last_point is not None:
+                                cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), colors[i], 2)
+                            last_point = point
 
                 if len(self.points) > 1:
                     last_point = None
@@ -140,33 +107,15 @@ class Simulation():
                             cv2.line(frame, (int(last_point[0]), int(last_point[1])), (int(point[0]), int(point[1])),
                                     (0, 255, 0), 2)
                         last_point = point
-                
-                if len(cam_points) > 1:
-                    last_point = None
-                    for point in cam_points:
-                        if last_point is not None:
-                            cv2.line(frame, (int(last_point[0]), int(last_point[1])), (int(point[0]), int(point[1])),
-                                    (0, 255, 100), 2)
-                        last_point = point
 
                 cv2.circle(frame, (int(noised_position[0]), int(noised_position[1])), 10, (0,0,255), -1)
 
+                if show_prediction > -1 and show_prediction < len(self.filter_predictions):
+                    prePos = self.filter_predictions[show_prediction][frame_no][0]
+                    preVar = self.filter_predictions[show_prediction][frame_no][1]
+                    for i in range(0, len(prePos)):
+                        cv2.ellipse(frame, (prePos[i][0], prePos[i][1]), (int(4* np.sqrt(preVar[i][0])), int(4*np.sqrt(preVar[i][1]))), 0, 0, 360, (0, 200, 255), 2)
 
-                vel = np.array([kalman_dynamic.x_post[1, 0], kalman_dynamic.x_post[4, 0]])
-                vel_norm = vel / np.linalg.norm(vel)
-                cv2.arrowedLine(frame, (300, 300), (int(300 + vel_norm[0] * 100), int(300 + vel_norm[1] * 100)), (255, 255, 255))
-
-                if not sim.isBallNearBank:
-                    prePos_cached = np.array(prePos)
-                    preVar_cached = np.array(preVar)
-                else:
-                    if len(prePos_cached) > 0:
-                        prePos_cached = np.delete(prePos_cached, 0, axis=0)
-                        preVar_cached = np.delete(preVar_cached, 0, axis=0)
-
-                for i in range(0, len(prePos_cached), 2):
-                    cv2.ellipse(frame, (prePos_cached[i][0], prePos_cached[i][1]), (int(4* np.sqrt(preVar_cached[i][0])), int(4*np.sqrt(preVar_cached[i][1]))), 0, 0, 360, (0, 200, 255), 2)
-                
                 cv2.namedWindow('Pool Simulation', cv2.WINDOW_NORMAL)
                 cv2.imshow("Pool Simulation", frame)
                 cv2.resizeWindow('Pool Simulation', 1200, 800)
@@ -176,12 +125,35 @@ class Simulation():
                 cv2.waitKey(max(int(self.update_time_in_secs * 1000) - execution_time_in_ms, 1))
             frame_no += 1
 
-        dynamic_mse = 10 * np.log10(self.residual(dynamic_filtered_points, self.points))
-        cam_mse = 10 * np.log10(self.residual(cam_points, self.points))
-        filter_mse = 10 * np.log10(self.residual(filtered_points, self.points)) 
-        no_filter_mse = 10 * np.log10(self.residual(noised_points, self.points))
+        self.mse_list = list()
+        for i in range(0, len(filter_points)):
+            self.mse_list.append(10 * np.log10(self.residual(filter_points[i], self.points)))
+        self.mse_list.append(10 * np.log10(self.residual(noised_points, self.points)))
 
-        return (cam_mse, dynamic_mse, filter_mse, no_filter_mse)
+        return self.mse_list
+
+    def get_predictions(self, filter=0):
+        return self.filter_predictions[filter]
+    
+    def get_mse_of_prediction(self, filter = 0, pre_no = 10, offset=30):
+        predictions = self.get_predictions(filter)
+        pre_pos = np.array(predictions)[offset:-pre_no, 0, pre_no]
+        points = np.array(self.points)[offset+pre_no:]
+        return 10 * np.log10(self.residual(pre_pos, points))
+    
+    def get_prediction_residuals(self, filter = 0, pre_no = 10, offset=30):
+        predictions = self.get_predictions(filter)
+        pre_pos = np.array(predictions)[offset:-pre_no-1, 0, pre_no-1]
+        points = np.array(self.points)[offset+pre_no-1:]
+
+        residuals = list()
+        for i in range(0, len(pre_pos)):
+            prediction = pre_pos[i]
+            gt = points[i]
+            distance = math.sqrt((prediction[0] - gt[0])**2 + (prediction[1] - gt[1])**2)
+            residuals.append(distance)
+
+        return residuals
 
     def find_best_process_noise(self, process_noise_range = (0, 30), process_noise_step = 0.1, dynamic_process_noise_range = (500, 1200), dynamic_process_noise_step = 10):
         best_process_noise = 0
@@ -205,38 +177,34 @@ class Simulation():
         print("Found best process noise for simulation with noise=%f and start_velocity=%f! Best: %fdB with pn=%d and dpn=%d" % (self.noise, self.start_velocity, best_db, best_process_noise, best_dynamic_process_noise))
         return (best_process_noise, best_dynamic_process_noise)
 
+    def show_mse_comparison_plot(self, pre_no=30):
+        x = np.arange(len(self.mse_list))
+        width = 0.35
 
-    def show_plot(self):
-        prediction_15_residuals = list()
-        prediction_30_residuals = list()
-        prediction_60_residuals = list()
+        pre_mse_list = list()
+        for i in range(0, len(self.mse_list) - 1):
+            pre_mse_list.append(self.get_mse_of_prediction(i, pre_no=pre_no))
+        pre_mse_list.append(0)
 
-        for i in range(0, len(self.points)):
-            gt = self.points[i]
-            if i >= 15:
-                prediction = self.prediction_15[i - 15]
-                distance = math.sqrt((prediction[0] - gt[0])**2 + (prediction[1] - gt[1])**2)
-                prediction_15_residuals.append(distance)
-            else:
-                prediction_15_residuals.append(0)
-            if i >= 30:
-                prediction = self.prediction_30[i - 30]
-                distance = math.sqrt((prediction[0] - gt[0])**2 + (prediction[1] - gt[1])**2)
-                prediction_30_residuals.append(distance)
-            else:
-                prediction_30_residuals.append(0)
-            if i >= 60:
-                prediction = self.prediction_60[i - 60]
-                distance = math.sqrt((prediction[0] - gt[0])**2 + (prediction[1] - gt[1])**2)
-                prediction_60_residuals.append(distance)
-            else:
-                prediction_60_residuals.append(0)
+        plt.bar(x - width/2, self.mse_list, width, label='MSE of position')
+        plt.bar(x + width/2, pre_mse_list, width, label='MSE prediction %d frames ago' % pre_no)
+        plt.ylabel('mse')
+        plt.xticks(x, x)
+        plt.title("Filter Comparison")
 
+        plt.legend()
+
+        plt.show()
+
+    def show_prediction_plot(self, filter=0, pre_nos=(15, 30, 60)):
+        
+        for pre_no in pre_nos:
+            residuals = self.get_prediction_residuals(filter, pre_no)
+            x = np.arange(0, len(residuals)) + pre_no
+            plt.plot(x, residuals, label='Prediction %d frames ago' % pre_no)
 
         #plt.boxplot([prediction_15_residuals, prediction_30_residuals, prediction_60_residuals], showfliers=False)
-        plt.plot(prediction_15_residuals, label='Prediction 15 frames ago')
-        plt.plot(prediction_30_residuals, label='Prediction 30 frames ago')
-        plt.plot(prediction_60_residuals, label='Prediction 60 frames ago')
+
         for i in range(0, len(self.bank_time_span)):
             plt.axvspan(self.bank_time_span[i][0], self.bank_time_span[i][1], color='red', alpha=0.1)
 
@@ -255,14 +223,13 @@ testing_start_velocity = [700, 500, 300]
 testing_fps = [60, 30, 10]
 
 sim = Simulation(noise=2.0, start_velocity=500, update_time_in_secs=(1.0/60))
-cam_mse, dynamic_mse, filter_mse, no_filter_mse = sim.run(process_noise = 1000, show_video=False)
-
+filters = [CAM_Filter(1.0/60, 600, 2.0),
+            MyFilter(1.0/60, 100, 2.0),
+            MyFilter(1.0/60, 800, 2.0)]
+cam_mse, dynamic_mse, filter_mse, no_filter_mse = sim.run(filters, process_noise = 1000, show_video=False, show_prediction=1)
+print(sim.get_mse_of_prediction(filter=1, pre_no = 10))
 print("CAM %fdB Dynmaic %fdB No Dynamic %fdB No Filter %fdB" % (cam_mse, dynamic_mse, filter_mse, no_filter_mse))
+#sim.show_mse_comparison_plot()
+sim.show_prediction_plot()
 
-# for noise in testing_noise:
-#     for start_velocity in testing_start_velocity:
-#         for fps in testing_fps:
-#             print("Starting first Test with noise=%f and start_velocity=%f and fps=%d" % (noise, start_velocity, fps))
-#             sim = Simulation(noise=noise, start_velocity=start_velocity, update_time_in_secs=(1.0/fps))
-#             sim.find_best_process_noise()
 
