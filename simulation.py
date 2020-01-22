@@ -9,7 +9,7 @@ import time
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 from pool_simulator import PoolSimulation
-from filter.filter import MyFilter
+from filter.smart_filter import Smart_CAM_Filter
 from filter.filter_constant_acceleration import CAM_Filter
 
 class Simulation():
@@ -41,9 +41,13 @@ class Simulation():
         mse = (rx ** 2 + ry ** 2).mean()
         return mse
 
-    def run(self, filters, process_noise = 20, dynamic_process_noise = 800, show_video = False, save_prediction = True, show_prediction=0):
+    def run(self, filters, show_video = False, save_prediction = True, show_prediction=0):
         
         sim = PoolSimulation(start_angle = -0.7, start_velocity = self.start_velocity, seconds=self.update_time_in_secs, friction=10.3)
+
+        self.names = list()
+        for i in range(0, len(filters)):
+            self.names.append(filters[i].name)
 
         self.points = list()
         noised_points = list()
@@ -91,7 +95,7 @@ class Simulation():
 
             if show_video:
                 
-                colors = [(255,255,0),(0,255,255), (255,0,255)]
+                colors = [(255,255,0),(0,255,255), (255,0,255), (55,20,100)]
                 for i, filter_point in enumerate(filter_points):
                     if len(filter_point) > 1:
                         last_point = None
@@ -129,6 +133,12 @@ class Simulation():
         for i in range(0, len(filter_points)):
             self.mse_list.append(10 * np.log10(self.residual(filter_points[i], self.points)))
         self.mse_list.append(10 * np.log10(self.residual(noised_points, self.points)))
+
+        output_string = ""
+        for i in range(0, len(filters)):
+            output_string += "%s: %fdB " % (filters[i].name, self.mse_list[i])
+        output_string += "No Filter: %fdB " % self.mse_list[-1]
+        print(output_string)
 
         return self.mse_list
 
@@ -187,9 +197,13 @@ class Simulation():
         pre_mse_list.append(0)
 
         plt.bar(x - width/2, self.mse_list, width, label='MSE of position')
+        for i, v in enumerate(self.mse_list):
+            plt.text(i - width/2, v + 0.5,  "{:10.2f}dB".format(v), color='blue', fontweight='bold', ha='center', va='bottom')
         plt.bar(x + width/2, pre_mse_list, width, label='MSE prediction %d frames ago' % pre_no)
+        for i, v in enumerate(pre_mse_list):
+            plt.text(i + width/2, v + 0.5,  "{:10.2f}dB".format(v), color='orange', fontweight='bold', ha='center', va='bottom')
         plt.ylabel('mse')
-        plt.xticks(x, x)
+        plt.xticks(x, self.names)
         plt.title("Filter Comparison")
 
         plt.legend()
@@ -223,13 +237,15 @@ testing_start_velocity = [700, 500, 300]
 testing_fps = [60, 30, 10]
 
 sim = Simulation(noise=2.0, start_velocity=500, update_time_in_secs=(1.0/60))
-filters = [CAM_Filter(1.0/60, 600, 2.0),
-            MyFilter(1.0/60, 100, 2.0),
-            MyFilter(1.0/60, 800, 2.0)]
-cam_mse, dynamic_mse, filter_mse, no_filter_mse = sim.run(filters, process_noise = 1000, show_video=False, show_prediction=1)
-print(sim.get_mse_of_prediction(filter=1, pre_no = 10))
-print("CAM %fdB Dynmaic %fdB No Dynamic %fdB No Filter %fdB" % (cam_mse, dynamic_mse, filter_mse, no_filter_mse))
-#sim.show_mse_comparison_plot()
-sim.show_prediction_plot()
 
+normal_cam = CAM_Filter(1.0/60, 5000, 2.0)
+cam_dynamic = Smart_CAM_Filter(1.0/60, 4000, 2.0, name="Dynamic PN", dynamic_process_noise=10000, smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
+cam_smart = Smart_CAM_Filter(1.0/60, 700, 2.0, name="Smart Prediction", dynamic_process_noise=None, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
+cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 600, 2.0, name="Dynamic and smart", dynamic_process_noise=1000, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
 
+filters = [normal_cam, cam_dynamic, cam_smart, cam_dynamic_smart]
+sim.run(filters, show_video=False, show_prediction=2, save_prediction=True)
+print(sim.get_mse_of_prediction(filter=0, pre_no = 10))
+#print("CAM %fdB Dynmaic %fdB No Dynamic %fdB No Filter %fdB" % (cam_mse, dynamic_mse, filter_mse, no_filter_mse))
+sim.show_mse_comparison_plot()
+#sim.show_prediction_plot()

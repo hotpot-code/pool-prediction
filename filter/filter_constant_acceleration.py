@@ -4,9 +4,10 @@ import cv2
 import copy
 
 class CAM_Filter():
-    def __init__(self, Ts, process_noise = 1.0, sensor_noise = 0.001):
+    def __init__(self, Ts, process_noise = 1.0, sensor_noise = 0.001, name="CAM Filter"):
+        self.name = name
         self.process_noise = process_noise
-        self.xhat = 0
+        self.xhat = np.matrix([[0], [0]])
         # init für x posteriori (geschätzte Werte)
         self.x_post = np.matrix([
             [0], # Start x Position
