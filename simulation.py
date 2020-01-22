@@ -203,7 +203,7 @@ class Simulation():
         for i, v in enumerate(pre_mse_list):
             plt.text(i + width/2, v + 0.5,  "{:10.2f}dB".format(v), color='orange', fontweight='bold', ha='center', va='bottom')
         plt.ylabel('mse')
-        plt.xticks(x, self.names)
+        plt.xticks(x, [*self.names, "no Filter"])
         plt.title("Filter Comparison")
 
         plt.legend()
