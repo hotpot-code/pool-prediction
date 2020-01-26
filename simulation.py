@@ -79,12 +79,23 @@ class Simulation():
         noise_y = math.sqrt(y_sum / (len(rows) - 1))
         return (noise_x, noise_y)
 
+    @staticmethod
+    def get_update_time_from_csv(file):
+        f = open(file, 'r')
+
+        with f:
+            reader = csv.reader(f)
+            rows = [r for r in reader]
+            ts = float(rows[1][7])
+        return ts
+
 
     def run(self, filters, show_video = False, save_prediction = True, show_prediction=0, show_output=True, file=None):
 
         if file is None:
             sim = PoolSimulation(start_angle = -0.7, start_velocity = self.start_velocity, seconds=self.update_time_in_secs, friction=10.3, noise=self.noise)
         else:
+            self.update_time_in_secs = Simulation.get_update_time_from_csv(file)
             frame, position, velocity, sensor_position, sim = PoolSimulation.update_from_csv(file, 0)
 
         self.names = list()
@@ -257,12 +268,17 @@ class Simulation():
 
 if __name__ == "__main__":
 
-    testing_noise = [2.0, 5.0, 10.0]
-    testing_start_velocity = [700, 500, 300]
-    testing_fps = [60, 30, 10]
+    # testing_noise = [2.0, 5.0, 10.0]
+    # testing_start_velocity = [700, 500, 300]
+    # testing_fps = [60, 30, 10]
+    #
+    # for noise in testing_noise:
+    #     for vel in testing_start_velocity:
+    #         for fps in testing_fps:
+    #             sim = Simulation(noise=noise, start_velocity=vel, update_time_in_secs=(1.0 / fps))
+    #             sim.create_csv("simulations/sim_" + str(noise) + "_" + str(vel) + "_" + str(fps) + ".csv")
 
-    sim = Simulation(noise=2.0, start_velocity=500, update_time_in_secs=(1.0/60))
-    sim.create_csv()
+    sim = Simulation()
 
     normal_cam = CAM_Filter(1.0/60, 19600, 2.0)
     cam_dynamic = Smart_CAM_Filter(1.0/60, 1000, 2.0, name="Dynamic PN", dynamic_process_noise=19600, smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
@@ -270,8 +286,7 @@ if __name__ == "__main__":
     cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 6, 2.0, name="Dynamic and smart", dynamic_process_noise=1000, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
 
     filters = [normal_cam, cam_dynamic, cam_smart, cam_dynamic_smart]
-    sim.run(filters, show_video=False, show_prediction=2, save_prediction=True, file="sim.csv")
-    # print(sim.get_mse_of_prediction(filter=0, pre_no = 10))
-    # #print("CAM %fdB Dynmaic %fdB No Dynamic %fdB No Filter %fdB" % (cam_mse, dynamic_mse, filter_mse, no_filter_mse))
-    # sim.show_mse_comparison_plot()
+    sim.run(filters, show_video=False, show_prediction=2, save_prediction=True, file="simulations/sim_2.0_700_60.csv")
+    print(sim.get_mse_of_prediction(filter=0, pre_no = 10))
+    sim.show_mse_comparison_plot()
     # #sim.show_prediction_plot()
