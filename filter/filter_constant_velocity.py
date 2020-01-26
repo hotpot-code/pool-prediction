@@ -1,84 +1,100 @@
 import numpy as np
+import copy
+import math
 
-class MyFilter():
-    def __init__(self, Ts, process_noise = 1.0, sensor_noise = 0.001):
+class CVM_Filter():
+    def __init__(self, Ts, process_noise=1.0, sensor_noise=0.001, name="CVM Filter"):
+        self.name = name
         self.process_noise = process_noise
-        self.sensor_noise = sensor_noise
-        self.xhat = 0
+        self.xhat = np.matrix([[0], [0]])
         # init für x posteriori (geschätzte Werte)
-        self.x_post = np.array([
-            [0], # Start x Position
-            [0], # Start x Geschwindigkeit
-            [0], # Start y Position
-            [0], # Start y Geschwindigkeit
+        self.x_post = np.matrix([
+            [0],  # Start x Position
+            [0],  # Start x Geschwindigkeit
+            [0],  # Start y Position
+            [0],  # Start y Geschwindigkeit
         ])
-        #init für P posteriori (geschätze Abweichung) groß machen
-        self.P_post = np.eye(4) * 100000000
+        # init für P posteriori (geschätze Abweichung) groß machen
+        self.P_post = np.diag([1000, 1000, 1000, 1000])
         self.Ts = Ts
+        self.sensor_noise = sensor_noise
 
-    def dofilter(self, y1, y2):
-        #Hier bitte Ihre Filterimplementierung
-        
         # Messrauschen
-        abweichung_sensor = self.sensor_noise ** 2
-        R = np.eye(2) * abweichung_sensor
-        
-        # Prozessrauschen
-        Q = np.eye(2) * self.process_noise ** 2
+        self.R = np.diag([self.sensor_noise, self.sensor_noise]) ** 2
+
+        self.setProcessNoise(self.process_noise)
 
         # Zustandstransfermatrix (constant acceleration)
-        Ad = np.array([[1, self.Ts, 0, 0],
-                        [0, 1, 0, 0, ],
-                        [0, 0, 1, self.Ts],
-                        [0, 0, 0, 1]])
-        
-        Gd = np.array([
-            [(self.Ts**2) / 2, 0],
+        self.Ad = np.matrix([[1, self.Ts, 0, 0],
+                             [0, 1, 0, 0],
+                             [0, 0, 1, self.Ts],
+                             [0, 0, 0, 1]])
+
+        self.Gd = np.matrix([
+            [(self.Ts ** 2) / 2.0, 0],
             [self.Ts, 0],
-            [0, (self.Ts**2) / 2],
+            [0, (self.Ts ** 2) / 2.0],
             [0, self.Ts]
         ])
-        
+
         # Umwandlung von (sx, vx, ax, sy, vy, ay) zu (sx, sy, sx, sy)
-        C = np.array([
+        self.C = np.matrix([
             [1, 0, 0, 0],
             [0, 0, 1, 0]
         ])
-        
+
+    def setProcessNoise(self, process_noise):
+        self.process_noise = process_noise
+        # Prozessrauschen
+        self.Q = np.eye(2) * self.process_noise ** 2
+
+    def dofilter(self, y1, y2):
+        # Hier bitte Ihre Filterimplementierung
+
         # x priori
-        x_prior = np.matmul(Ad, self.x_post)
+        x_prior = self.Ad * self.x_post
         # P priori
-        P_prior = np.matmul(Ad, np.matmul(self.P_post, Ad.T)) + np.matmul(Gd, np.matmul(Q, Gd.T))
-                
-        S = np.matmul(C, np.matmul(P_prior, C.T)) + R
-        K = np.matmul(P_prior, np.matmul(C.T, np.linalg.inv(S)))
-        
+        P_prior = self.Ad * self.P_post * self.Ad.T + self.Gd * self.Q * self.Gd.T
+
+        S = self.C * P_prior * self.C.T + self.R
+        K = P_prior * self.C.T * (S ** -1)
+
         if (y1 is not None):
             # Messwert Array zu Matrix
-            y = np.array([
+            y = np.matrix([
                 [y1],
                 [y2]
             ])
+            self.x_post = x_prior + K * (y - self.C * x_prior)
+            self.P_post = (np.eye(4) - K * self.C) * P_prior
         else:
-            y =  np.matmul(C, x_prior)
-        
-        self.x_post = x_prior + np.matmul(K, (y - np.matmul(C, x_prior)))
-        self.P_post = np.dot((np.eye(4) - np.dot(K, C)), P_prior)
-        # Schätzung der Systemmesswerte
-        self.xhat = np.array([self.x_post[0,0], self.x_post[2,0]])
+            self.x_post = x_prior
+            self.P_post = P_prior
 
-        #self.xhat = y1_xy
+        # Schätzung der Systemmesswerte
+        self.xhat = np.array([self.x_post[0, 0], self.x_post[2, 0]])
+
+        # self.xhat = y1_xy
 
         return self.xhat
 
-    def get_p_post(self):
-        return self.P_post
+    def getPredictions(self, max_count=500):
 
-    def getPredictionAfterSec(self, sec):
-        # Zustandstransfermatrix (constant acceleration)
-        Ad = np.matrix([[1, sec, 0, 0, ],
-                        [0, 1, 0, 0,],
-                        [0, 0, 1, sec],
-                        [0, 0, 0, 1]])
-        x_prior = Ad * self.x_post
-        return np.array([x_prior[0,0], x_prior[2,0]])
+        kalman_copy = copy.copy(self)
+
+        prePos = []
+        preVar = []
+
+        while len(prePos) < max_count:
+            kalman_copy.dofilter(None, None)
+
+            prePos.append([int(kalman_copy.xhat[0]), int(kalman_copy.xhat[1])])
+            preVar.append([int(kalman_copy.P_post[0, 0]), int(kalman_copy.P_post[2, 2])])
+
+        return (prePos, preVar)
+
+    def py_ang(self, v1, v2):
+        dot = v1[0] * v2[0] + v1[1] * v2[1]  # dot product
+        det = v1[0] * v2[1] - v1[1] * v2[0]  # determinant
+        angle = math.atan2(det, dot)  # atan2(y, x) or atan2(sin, cos)
+        return angle
