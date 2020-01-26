@@ -41,11 +41,11 @@ class Smart_CVM_Filter(CVM_Filter):
 
         if self.smart_prediction:
 
-            def applyRotation(rotation):
-                new_x = math.cos(rotation) * vel[0] - math.sin(rotation) * vel[1]
-                new_y = math.sin(rotation) * vel[0] + math.cos(rotation) * vel[1]
-                self.x_post[1, 0] = new_x
-                self.x_post[3, 0] = new_y
+            def applyReflectionTopBottom():
+                self.x_post[3, 0] = self.x_post[3, 0] * -1
+
+            def applyReflectionLeftRight():
+                self.x_post[1, 0] = self.x_post[1, 0] * -1
 
             def resetHits():
                 self.can_hit_right_bank = True
@@ -55,32 +55,22 @@ class Smart_CVM_Filter(CVM_Filter):
 
             resetHits()
 
-            vel = np.array([self.x_post[1,0], self.x_post[3,0]])
-            
             if self.xhat[0] + self.radius > self.xRight and self.can_hit_right_bank:
                 resetHits()
                 self.can_hit_right_bank = False
-                angle = self.py_ang(np.array([1,0]), vel)
-                rotation_angle = math.pi - 2 * angle
-                applyRotation(rotation_angle)
+                applyReflectionLeftRight()
             if self.xhat[1] + self.radius > self.yBot and self.can_hit_bottom_bank:
                 resetHits()
                 self.can_hit_bottom_bank = False
-                angle = self.py_ang(np.array([0,1]), vel)
-                rotation_angle = math.pi - 2 * angle
-                applyRotation(rotation_angle)
+                applyReflectionTopBottom()
             if self.xhat[1] - self.radius < self.yTop and self.can_hit_top_bank:
                 resetHits()
                 self.can_hit_top_bank = False
-                angle = self.py_ang(np.array([0,-1]), vel)
-                rotation_angle = math.pi - 2 * angle
-                applyRotation(rotation_angle)
+                applyReflectionTopBottom()
             if self.xhat[0] - self.radius < self.xLeft and self.can_hit_left_bank:
                 resetHits()
                 self.can_hit_left_bank = False
-                angle = self.py_ang(np.array([-1,0]), vel)
-                rotation_angle = math.pi - 2 * angle
-                applyRotation(rotation_angle)
+                applyReflectionLeftRight()
 
         return self.xhat
 
