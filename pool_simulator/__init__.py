@@ -4,11 +4,12 @@ import math
 import cv2
 from .Ball import Ball
 from .Bank import Bank
+import csv
 
 class PoolSimulation():
 
-    def __init__(self, start_position = (960,540), start_angle = math.pi/2 + 0.3, start_velocity = 900, friction = 0.06, seconds = 0.16):
-        self.ball = Ball(start_position, 25, start_velocity, friction)
+    def __init__(self, start_position = (960,540), start_angle = math.pi/2 + 0.3, start_velocity = 900, friction = 0.06, seconds = 0.16, noise=2):
+        self.ball = Ball(start_position, 25, start_velocity, friction, noise)
         self.ball.setRotation(start_angle)
         self.bank_left = Bank((100,100), (100, 980))
         self.can_hit_left_bank = True
@@ -31,6 +32,40 @@ class PoolSimulation():
         self.can_hit_right_bank = True
         self.can_hit_top_bank = True
         self.can_hit_bottom_bank = True
+
+    @staticmethod
+    def update_from_csv(file, frame_no):
+        sim = PoolSimulation()
+        f = open(file, 'r')
+
+        with f:
+            reader = csv.reader(f)
+            rows = [r for r in reader]
+            row = rows[frame_no + 1]
+
+            sim.ball.position = (float(row[0]), float(row[1]))
+
+            # Get frame from video
+            frame = np.zeros((1080, 1920, 3), np.uint8)
+
+            sim.isBallNearBank = False
+            if sim.ball.position[1] + sim.ball.size * sim.bankDetectionRadius >= sim.bank_bottom.p1[1]:
+                sim.isBallNearBank = True
+            if sim.ball.position[1] - sim.ball.size * sim.bankDetectionRadius <= sim.bank_top.p1[1]:
+                sim.isBallNearBank = True
+            if sim.ball.position[0] - sim.ball.size * sim.bankDetectionRadius <= sim.bank_left.p1[0]:
+                sim.isBallNearBank = True
+            if sim.ball.position[0] + sim.ball.size * sim.bankDetectionRadius >= sim.bank_right.p1[0]:
+                sim.isBallNearBank = True
+
+            for game_object in sim.game_objects:
+                game_object.render(frame)
+
+            if len(rows) <= frame_no + 2:
+                sim.isBallMoving = False
+
+            return (frame, sim.ball.position, (float(row[2]), float(row[3])), (float(row[4]), float(row[5])), sim)
+
 
     
     def update(self):
@@ -82,4 +117,4 @@ class PoolSimulation():
         if self.ball.velocity == 0:
             self.isBallMoving = False
 
-        return (frame, self.ball.position, velocity_vector)
+        return (frame, self.ball.position, velocity_vector, self.ball.getNoisedPosition())

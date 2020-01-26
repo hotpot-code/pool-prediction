@@ -3,7 +3,7 @@ import cv2
 import copy
 import math
 import matplotlib.pyplot as plt
-from tqdm import tqdm, trange
+import csv
 
 import time
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -41,9 +41,51 @@ class Simulation():
         mse = (rx ** 2 + ry ** 2).mean()
         return mse
 
-    def run(self, filters, show_video = False, save_prediction = True, show_prediction=0):
-        
-        sim = PoolSimulation(start_angle = -0.7, start_velocity = self.start_velocity, seconds=self.update_time_in_secs, friction=10.3)
+    def create_csv(self, filename="sim.csv"):
+        f = open(filename, 'w')
+
+        simulation = PoolSimulation(start_angle=-0.7, start_velocity=self.start_velocity, seconds=self.update_time_in_secs, friction=10.3, noise=self.noise)
+        with f:
+            writer = csv.writer(f)
+            writer.writerow(["POS_X", "POS_Y", "VEL_X", "VEL_Y", "SENSOR_X", "SENSOR_Y", "NEAR_BANK", "TS"])
+            while simulation.isBallMoving:
+                frame, position, velocity, sensor_pos = simulation.update()
+                near_bank = simulation.isBallNearBank
+                writer.writerow([*position, *velocity, *sensor_pos, near_bank, self.update_time_in_secs])
+
+    @staticmethod
+    def get_noise_from_csv(file):
+        f = open(file, 'r')
+
+        x_sum = 0
+        y_sum = 0
+
+        with f:
+            reader = csv.reader(f)
+            rows = [r for r in reader]
+            for i in range(1, len(rows)):
+                pos_x = float(rows[i][0])
+                pos_y = float(rows[i][1])
+                sensor_x = float(rows[i][4])
+                sensor_y = float(rows[i][5])
+
+                x_dis = math.pow(pos_x - sensor_x, 2)
+                y_dis = math.pow(pos_y - sensor_y, 2)
+
+                x_sum += x_dis
+                y_sum += y_dis
+
+        noise_x = math.sqrt(x_sum / (len(rows) - 1))
+        noise_y = math.sqrt(y_sum / (len(rows) - 1))
+        return (noise_x, noise_y)
+
+
+    def run(self, filters, show_video = False, save_prediction = True, show_prediction=0, show_output=True, file=None):
+
+        if file is None:
+            sim = PoolSimulation(start_angle = -0.7, start_velocity = self.start_velocity, seconds=self.update_time_in_secs, friction=10.3, noise=self.noise)
+        else:
+            frame, position, velocity, sensor_position, sim = PoolSimulation.update_from_csv(file, 0)
 
         self.names = list()
         for i in range(0, len(filters)):
@@ -68,9 +110,11 @@ class Simulation():
         frame_no = 0
         while sim.isBallMoving:
             start_ms = current_milli_time()
-            frame, position, velocity = sim.update()
-            R = np.diag([self.noise, self.noise]) ** 2
-            noised_position = np.random.multivariate_normal(np.array(position).flatten(), R)
+            if file is None:
+                frame, position, velocity, sensor_position = sim.update()
+            else:
+                frame, position, velocity, sensor_position, sim = PoolSimulation.update_from_csv(file, frame_no)
+            noised_position = sensor_position
 
             if sim.isBallNearBank:
                 if not near_bank:
@@ -117,7 +161,7 @@ class Simulation():
                 if show_prediction > -1 and show_prediction < len(self.filter_predictions):
                     prePos = self.filter_predictions[show_prediction][frame_no][0]
                     preVar = self.filter_predictions[show_prediction][frame_no][1]
-                    for i in range(0, len(prePos)):
+                    for i in range(0, len(prePos), 5):
                         cv2.ellipse(frame, (prePos[i][0], prePos[i][1]), (int(4* np.sqrt(preVar[i][0])), int(4*np.sqrt(preVar[i][1]))), 0, 0, 360, (0, 200, 255), 2)
 
                 cv2.namedWindow('Pool Simulation', cv2.WINDOW_NORMAL)
@@ -134,11 +178,12 @@ class Simulation():
             self.mse_list.append(10 * np.log10(self.residual(filter_points[i], self.points)))
         self.mse_list.append(10 * np.log10(self.residual(noised_points, self.points)))
 
-        output_string = ""
-        for i in range(0, len(filters)):
-            output_string += "%s: %fdB " % (filters[i].name, self.mse_list[i])
-        output_string += "No Filter: %fdB " % self.mse_list[-1]
-        print(output_string)
+        if show_output:
+            output_string = ""
+            for i in range(0, len(filters)):
+                output_string += "%s: %fdB " % (filters[i].name, self.mse_list[i])
+            output_string += "No Filter: %fdB " % self.mse_list[-1]
+            print(output_string)
 
         return self.mse_list
 
@@ -164,28 +209,6 @@ class Simulation():
             residuals.append(distance)
 
         return residuals
-
-    def find_best_process_noise(self, process_noise_range = (0, 30), process_noise_step = 0.1, dynamic_process_noise_range = (500, 1200), dynamic_process_noise_step = 10):
-        best_process_noise = 0
-        best_dynamic_process_noise = 0
-        best_db = 10000
-
-        outer_range = np.arange(process_noise_range[0], process_noise_range[1], process_noise_step)
-        inner_range = np.arange(dynamic_process_noise_range[0], dynamic_process_noise_range[1], dynamic_process_noise_step)
-
-        with tqdm(total=(len(outer_range) * len(inner_range))) as pbar:
-            for process_noise in outer_range:
-                for dynamic_process_noise in inner_range:
-                    pbar.set_description("Testing with pn=%d and dpn=%d! Current best: %fdB with pn=%d and dpn=%d" % (process_noise, dynamic_process_noise, best_db, best_process_noise, best_dynamic_process_noise))
-                    dynamic_db, filter_db, no_filter_db = self.run(process_noise, dynamic_process_noise, save_prediction=False)
-                    if dynamic_db < best_db:
-                        best_db = dynamic_db
-                        best_process_noise = process_noise
-                        best_dynamic_process_noise = dynamic_process_noise
-                    pbar.update(1)
-        
-        print("Found best process noise for simulation with noise=%f and start_velocity=%f! Best: %fdB with pn=%d and dpn=%d" % (self.noise, self.start_velocity, best_db, best_process_noise, best_dynamic_process_noise))
-        return (best_process_noise, best_dynamic_process_noise)
 
     def show_mse_comparison_plot(self, pre_no=30):
         x = np.arange(len(self.mse_list))
@@ -232,20 +255,23 @@ class Simulation():
         plt.show()
 
 
-testing_noise = [2.0, 5.0, 10.0]
-testing_start_velocity = [700, 500, 300]
-testing_fps = [60, 30, 10]
+if __name__ == "__main__":
 
-sim = Simulation(noise=2.0, start_velocity=500, update_time_in_secs=(1.0/60))
+    testing_noise = [2.0, 5.0, 10.0]
+    testing_start_velocity = [700, 500, 300]
+    testing_fps = [60, 30, 10]
 
-normal_cam = CAM_Filter(1.0/60, 5000, 2.0)
-cam_dynamic = Smart_CAM_Filter(1.0/60, 4000, 2.0, name="Dynamic PN", dynamic_process_noise=10000, smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
-cam_smart = Smart_CAM_Filter(1.0/60, 700, 2.0, name="Smart Prediction", dynamic_process_noise=None, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
-cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 600, 2.0, name="Dynamic and smart", dynamic_process_noise=1000, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    sim = Simulation(noise=2.0, start_velocity=500, update_time_in_secs=(1.0/60))
+    sim.create_csv()
 
-filters = [normal_cam, cam_dynamic, cam_smart, cam_dynamic_smart]
-sim.run(filters, show_video=False, show_prediction=2, save_prediction=True)
-print(sim.get_mse_of_prediction(filter=0, pre_no = 10))
-#print("CAM %fdB Dynmaic %fdB No Dynamic %fdB No Filter %fdB" % (cam_mse, dynamic_mse, filter_mse, no_filter_mse))
-sim.show_mse_comparison_plot()
-#sim.show_prediction_plot()
+    normal_cam = CAM_Filter(1.0/60, 19600, 2.0)
+    cam_dynamic = Smart_CAM_Filter(1.0/60, 1000, 2.0, name="Dynamic PN", dynamic_process_noise=19600, smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    cam_smart = Smart_CAM_Filter(1.0/60, 500, 2.0, name="Smart Prediction", dynamic_process_noise=None, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 6, 2.0, name="Dynamic and smart", dynamic_process_noise=1000, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
+
+    filters = [normal_cam, cam_dynamic, cam_smart, cam_dynamic_smart]
+    sim.run(filters, show_video=False, show_prediction=2, save_prediction=True, file="sim.csv")
+    # print(sim.get_mse_of_prediction(filter=0, pre_no = 10))
+    # #print("CAM %fdB Dynmaic %fdB No Dynamic %fdB No Filter %fdB" % (cam_mse, dynamic_mse, filter_mse, no_filter_mse))
+    # sim.show_mse_comparison_plot()
+    # #sim.show_prediction_plot()

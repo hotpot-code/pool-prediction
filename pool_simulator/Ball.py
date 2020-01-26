@@ -4,12 +4,13 @@ import math
 
 class Ball():
 
-    def __init__(self, position, size = 2, start_velocity = 900, friction = 0.06):
+    def __init__(self, position, size = 2, start_velocity = 900, friction = 0.06, noise=2.0):
         self.forward = np.array([0, -1])
         self.position = position
         self.size = size
         self.velocity = start_velocity
         self.friction = friction
+        self.noise = noise
 
     def update(self, delta_time):
         # http://web.cs.iastate.edu/~jia/papers/billiard-analysis.pdf
@@ -35,3 +36,8 @@ class Ball():
         new_x = math.cos(angle) * forward[0] - math.sin(angle) * forward[1]
         new_y = math.sin(angle) * forward[0] + math.cos(angle) * forward[1]
         self.forward = np.array([new_x, new_y])
+
+    def getNoisedPosition(self):
+        R = np.diag([self.noise, self.noise]) ** 2
+        noised_position = np.random.multivariate_normal(np.array(self.position).flatten(), R)
+        return noised_position
