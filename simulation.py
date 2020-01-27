@@ -10,6 +10,7 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 
 from pool_simulator import PoolSimulation
 from filter.smart_filter import Smart_CAM_Filter
+from filter.smart_cvm_filter import Smart_CVM_Filter
 from filter.filter_constant_acceleration import CAM_Filter
 
 class Simulation():
@@ -145,7 +146,7 @@ class Simulation():
             if save_prediction:
                 for i, custom_filter in enumerate(filters):
                     self.filter_predictions[i].append([])
-                    pre_pos, pre_var = custom_filter.getPredictions(max_count=60)
+                    pre_pos, pre_var = custom_filter.getPredictions(max_count=61)
                     self.filter_predictions[i][len(self.filter_predictions[i]) - 1] = [pre_pos, pre_var]
 
             if show_video:
@@ -256,14 +257,30 @@ class Simulation():
         for i in range(0, len(self.bank_time_span)):
             plt.axvspan(self.bank_time_span[i][0], self.bank_time_span[i][1], color='red', alpha=0.1)
 
-        plt.xlabel('frame no')
+        plt.xticks(x, [*self.names, "no Filter"])
         plt.ylabel('distance to ground truth')
 
+        plt.ylim(top=650)
         plt.title("Predictions")
-
         plt.legend()
-
         plt.show()
+
+    def show_prediction_boxplot(self, filter=0, pre_nos=(15, 30, 60)):
+
+        residuals = list()
+        for pre_no in pre_nos:
+            residuals.append(self.get_prediction_residuals(filter, pre_no))
+
+        plt.boxplot(residuals, showfliers=False)
+
+        plt.xticks(range(1, len(residuals) + 1), pre_nos)
+        plt.xlabel('prediction # frames ago')
+        plt.ylabel('distance to ground truth')
+        plt.ylim(top=530)
+        plt.title("Predictions")
+        plt.legend()
+        plt.show()
+
 
 
 if __name__ == "__main__":
@@ -280,13 +297,17 @@ if __name__ == "__main__":
 
     sim = Simulation()
 
-    normal_cam = CAM_Filter(1.0/60, 19600, 2.0)
-    cam_dynamic = Smart_CAM_Filter(1.0/60, 1000, 2.0, name="Dynamic PN", dynamic_process_noise=19600, smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
-    cam_smart = Smart_CAM_Filter(1.0/60, 500, 2.0, name="Smart Prediction", dynamic_process_noise=None, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
-    cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 6, 2.0, name="Dynamic and smart", dynamic_process_noise=1000, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    normal_cam = CAM_Filter(1.0/60, 45290, 2.0, name="CAM Filter")
+    normal_cvm = Smart_CVM_Filter(1.0 / 60, 2210, 2.0, name="CVM Filter", smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    smart_cvm = Smart_CVM_Filter(1.0 / 60, 533, 2.0, name="Smart CVM").setBoundaries(100, 1820, 100, 980).setRadius(25)
+    cam_dynamic = Smart_CAM_Filter(1.0/60, 400, 2.0, name="dynamic CAM", dynamic_process_noise=40000, smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    cvm_dynamic = Smart_CVM_Filter(1.0/60, 300, 2.0, name="dynamic CVM", dynamic_process_noise=2210, smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
 
-    filters = [normal_cam, cam_dynamic, cam_smart, cam_dynamic_smart]
+    cam_smart = Smart_CAM_Filter(1.0/60, 511, 2.0, name="Smart CAM", dynamic_process_noise=None, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    smart_dyn_cvm = Smart_CVM_Filter(1.0 / 60, 350, 2.0, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 350, 2.0, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
+
+    filters = [cvm_dynamic, cam_dynamic, smart_cvm]
     sim.run(filters, show_video=False, show_prediction=2, save_prediction=True, file="simulations/sim_2.0_700_60.csv")
-    print(sim.get_mse_of_prediction(filter=0, pre_no = 10))
-    sim.show_mse_comparison_plot()
-    # #sim.show_prediction_plot()
+    #sim.show_mse_comparison_plot(pre_no=30)
+    sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
