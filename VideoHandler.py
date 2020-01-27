@@ -19,10 +19,10 @@ class VideoHandler():
             self.radiusMax = 11
 
             #Origin (0,0) #  tbd
-            self.xLeft = 35
-            self.xRight = 1245
-            self.yTop = 38
-            self.yBot = 685
+            self.xLeft = 16
+            self.xRight = 586
+            self.yTop = 17
+            self.yBot = 322
 
         elif name =="pool_3":
             self.alpha = 1 # Contrast control (1.0-3.0)

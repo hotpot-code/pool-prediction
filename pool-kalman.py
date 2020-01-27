@@ -36,7 +36,10 @@ p3 = (vh.xRight, vh.yBot) # bottom right
 p4 = (vh.xLeft, vh.yBot) # bottom left
 
 #kalman = MyFilter(0.01666, 600.0, 0.001)
+#pool3
 kalman = Smart_CVM_Filter(0.016, 600, 0.25)
+#pool1
+#kalman = Smart_CVM_Filter(0.033, 500, 0.1)
 #kalman = Smart_CAM_Filter(0.016, 820, 0.25)
 
 kalman.setBoundaries(vh.xLeft, vh.xRight, vh.yTop, vh.yBot)
