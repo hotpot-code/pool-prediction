@@ -164,7 +164,14 @@ INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam5.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm
+INPUT d:/_PhyComm/pool-prediction/researchPaper/./images/placeholder.PNG
+INPUT ./images/placeholder.png
+INPUT ./images/placeholder.png
+INPUT d:/_PhyComm/pool-prediction/researchPaper/./images/placeholder.PNG
+INPUT ./images/placeholder.png
 INPUT c:/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map
+INPUT d:/_PhyComm/pool-prediction/researchPaper/./images/placeholder.PNG
+INPUT ./images/placeholder.png
 INPUT d:/_PhyComm/pool-prediction/researchPaper/20200106_researchPaper.bbl
 INPUT d:/_PhyComm/pool-prediction/researchPaper/20200106_researchPaper.bbl
 INPUT c:/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmti10.tfm
