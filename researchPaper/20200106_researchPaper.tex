@@ -4,7 +4,7 @@
 \usepackage[left=35mm,top=26mm,right=26mm,bottom=15mm]{geometry}
 
 % deutsche Übersetzungen
-\usepackage[ngerman]{babel}
+%\usepackage[ngerman]{babel}
 % Grafik Pakete
 \usepackage{graphicx,hyperref,amssymb}
 % Ordner für Grafiken
@@ -26,6 +26,8 @@
 
 \usepackage{multicol}
 
+\usepackage{cite}
+
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
@@ -36,34 +38,102 @@
 
 \title{Pool-Predictor - a Kalman-Filter Implementation}
 \author{Marlon Lückert B.Sc. - Julius Neudecker B.Sc.}
-\date{January 2020}
+\date{Feburary 2020}
 
 \maketitle
 
 \begin{abstract}
-Magna laborum incididunt sunt ut non. Reprehenderit ullamco pariatur laborum veniam fugiat id in reprehenderit sint nisi pariatur. Pariatur eu est culpa quis ullamco aliquip culpa. Consectetur et commodo ex eu in nisi. Esse adipisicing dolor nostrud voluptate proident mollit ea ut sit. Reprehenderit aute nulla tempor fugiat amet labore.
+In this article we're discussing an implementation of a Kalman-Filter to filter and predict the movement of balls on a pool table. 
+We discuss the reasoning why we implemented the filter as a constant velocity model and its weak points in this situation.
+Since the performance of the filter deteriorates in cases of a rapid change in direction we developed two different implementations with adaptive behaviour.
+The implementations were tested in a simulator and with real world video footage of a pool table.
+In the end we compared the performaces of each filter to another.
 
-Incididunt esse ad Lorem sint laboris consectetur laborum eiusmod aute. Irure elit mollit consectetur dolor elit dolor exercitation incididunt occaecat sint ipsum. Eiusmod duis et sunt et voluptate. Et minim id aute Lorem veniam reprehenderit pariatur.
-
-Voluptate eiusmod cupidatat Lorem duis. Mollit pariatur irure ullamco cillum ex esse est deserunt aliquip cupidatat elit anim sit. Amet aliquip nulla eiusmod cillum.
 \end{abstract}
 
 \begin{multicols}{2}
-\section{Whatever 1}
+\section{Introduction}
 
-Cupidatat ullamco sit amet anim aliqua pariatur cillum incididunt adipisicing dolore occaecat nostrud officia. Sunt deserunt commodo aute exercitation ut. Voluptate ullamco consectetur est labore irure nulla officia non sunt in in duis eiusmod officia. Et veniam cillum ea duis culpa duis enim. Veniam voluptate elit excepteur proident sunt quis. Esse tempor laborum fugiat nulla exercitation eu officia fugiat dolore commodo sint. Exercitation cupidatat aute pariatur dolor ex sunt aliqua amet consequat consequat nostrud.
+\subsection{Game of Pool}
 
-Ea deserunt culpa deserunt quis ad esse cupidatat nostrud tempor consectetur est laboris. Ad non proident nulla sit magna dolore amet occaecat aliqua ad ut culpa dolor nulla. Esse aliqua pariatur anim proident ea enim commodo ad elit. Ea consectetur id qui anim ea ut excepteur fugiat mollit ut veniam duis. Ex voluptate occaecat quis aliqua excepteur consequat amet pariatur aliquip in excepteur in consectetur pariatur. Veniam ea laborum commodo voluptate magna exercitation pariatur proident.
+At first glance the game of pool is very suitable to examine the behaviour of a kalman-filter \cite{kalman} enhanced tracking system based on pure visual tracking. 
+The surface of a pool table is made of a thin fabric which covers a hard surface i.e. slate or granite.
+The balls nowadays are usually made out of resin. This combination of materials creates very small rolling resistance and the balls behave almost fully elastic on collision.
+Also with only 2 DOF\footnote{dimensions of freedom} a basic kalman filter implementation is fairly simple in this regard. But when two balls hit each other or a boundary, the velocity vector
+changes its orientation instantly. If this isn't taken into account, the filter needs some time to adapt to the new direction of movement and will produce wrong estimations during this time.
 
-Sunt aute veniam laborum cillum adipisicing adipisicing deserunt ea laboris sunt consequat. Aliqua laboris aliqua aliquip cillum nulla aute adipisicing ea. Quis velit fugiat et eiusmod adipisicing adipisicing in amet elit occaecat elit velit.
 
-In do consequat sunt eu nostrud dolore mollit et incididunt tempor. Proident ea consequat deserunt consectetur quis voluptate irure. Elit esse reprehenderit proident ea sunt incididunt.
+\subsection{Visual Recognition of moving elements}
+
+\subsection{Kalman-Filter}
+\paragraph{CVM}
+\paragraph{CAM}
+
+
+\section{Related Work}
+
+R E Kalman: https://asmedigitalcollection.asme.org/fluidsengineering/article-abstract/82/1/35/397706
+
+Soccer Ball Tracking with prediction (velocity vector of player to presume ball velocity vector)
+Jong-Yun Kim, et al https://ieeexplore.ieee.org/abstract/document/5298809
+
+Trajectory of a Billiard Ball and Recovery of Its Initial Velocities
+Yan-Bin Jia, et al http://web.cs.iastate.edu/~jia/papers/billiard-analysis.pdf
+
+Visual Tracking with kalman filter
+Shiuh-KuWeng et al https://www.sciencedirect.com/science/article/pii/S1047320306000113
+
+Tracking and Prediction using Markov-Models
+Mathieu Salzmann ; Raquel Urtasun https://ieeexplore.ieee.org/abstract/document/6126480
+
+Adaptive Kalman Filtering for INS/GPS (uses filterbanks and innovation based but for very confined situation)
+A. H. MohamedK. P. Schwarz https://link.springer.com/article/10.1007/s001900050236
+
+On the identification of variances and adaptive Kalman filtering (our Approach to dynamic filtering  but only steady state)
+R. Mehra https://ieeexplore.ieee.org/abstract/document/1099422
+
+Recursive Noise Adaptive Kalman Filtering by Variational Bayesian Approximations
+Simo Sarkka ; Aapo Nummenmaa https://ieeexplore.ieee.org/abstract/document/4796261
+
+\section{Implementation}
+\subsection{differences between implementations}
+
+\subsection{CVM devel + Problems in Prediction}
+\subsection{Dyn CVM devel}
+\subsection{Smart Devel}
+
+\section{Simulations}
+
+\subsection{Structure of Simulation}
+optimal parameters
+
+\subsection{Sampling}
+\subsection{Noise}
+\subsection{Velocity}
+
+\section{Results}
+
+\subsection{Real Video - Prediction vs. Filtered}
+\paragraph{No Ground Truth}
+\subsection{CVM vs. CAM}
+
+\section{Future Work}
+
+\section{Improvements}
+Abstand von Bande durch diskrete abtastung ungenau, weil zeitliche unschärfe entsteht (abprall zwischen zwei frames).
+Prediction müsste unabhängig von frames gemacht werden.
+
+
+\subsection{AR App for Training}
+\subsection{Broadcasting}
+
+\section{Acknowledgement}
+
+T.Edeler wegen Vorlesung diesdas.
 
 \end{multicols}
 
-
-\section{Whatever 2}
-
-Mollit proident laborum irure dolore.
+\bibliography{references} 
+\bibliographystyle{ieeetr}
 
 \end{document}
