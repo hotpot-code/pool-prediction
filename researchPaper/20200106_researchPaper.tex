@@ -1,7 +1,7 @@
 \documentclass[notitlepage, a4paper, 11pt]{scrartcl}
 
 %too much whitespace otherwise
-\usepackage[left=23mm,top=26mm,right=23mm,bottom=15mm]{geometry}
+\usepackage[left=23mm,top=20mm,right=23mm,bottom=15mm]{geometry}
 
 % deutsche Übersetzungen
 %\usepackage[ngerman]{babel}
@@ -20,6 +20,8 @@
 % Header and Footer
 \usepackage{fancyhdr}
 
+\usepackage{titlesec}
+
 %image grid
 \usepackage{graphicx}
 \usepackage{subfig}
@@ -27,6 +29,27 @@
 \usepackage{multicol}
 
 \usepackage{cite}
+
+\usepackage{amsmath}
+
+%\geometry{top=20mm}
+\usepackage{etoolbox}
+
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+\makeatletter
+\patchcmd{\@maketitle}{\vskip 2em}{\vspace*{-1cm}}{}{}
+\makeatother
+
+% Keywords command
+\providecommand{\keywords}[1]
+{
+  \small	
+  \textbf{\textit{Keywords---}} #1
+}
+
+\titleformat*{\subsection}{\small\bfseries}
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -51,29 +74,32 @@ In the end we compared the performaces of each filter to another.
 
 \end{abstract}
 
+\keywords{kalman, pool, prediction, filter}
+
 \begin{multicols}{2}
 \section{Introduction}
 
-\subsection{Game of Pool}
+\subsection{Game of Pool} \label{intro}
 
 At first glance the game of pool is very suitable to examine the behaviour of a kalman-filter enhanced tracking system based on pure visual tracking. 
 The surface of a pool table is made of a thin fabric which covers a hard surface i.e. slate or granite.
 The balls nowadays are usually made out of resin. This combination of materials creates very small rolling resistance and the balls behave almost fully elastic on collision.
-Also with only 2 DOF\footnote{Dimensions Of Freedom - determines the possible rotation or translation along each given axis} a basic kalman filter implementation is fairly simple in this regard. But when two balls hit each other or a boundary, the velocity vector
-changes its orientation instantly. If this isn't taken into account, the filter needs some time to adapt to the new direction of movement and will produce wrong estimations during this time.
+Also with only 2 DOF\footnote{Dimensions Of Freedom - determines the possible rotation or translation along each given axis} a basic kalman filter implementation is fairly simple in this regard. 
+But when two balls hit each other or a cushion, the velocity vector changes its orientation instantly. 
+If this isn't taken into account, the filter needs some time to adapt to the new direction of movement and will produce wrong estimations during this time.
 
-This behaviour is independent of the type of kalman implementation being CVM or CAM (see section \ref{kalman-desc}). We call it the prediction problem in this regard.
-A kalman filter will assume the direction of movement on any given sample is the same as in the last sample. 
-It will therefore create wrong estimations if the directon of movement changes drastically in a short period of time.
+This behaviour is independent of the type of kalman implementation being CVM or CAM (see \cref{kalman-basic}).
+A kalman filter will assume the direction of movement on any given sample is about the same as in the last sample. 
+It will therefore create wrong estimations if the directon of movement changes drastically in a short period of time. The time the filter needs to recover depends on the filter gain.
 
-Because the filter allows to predict values for any given length into the future by feeding back its estimations as actual state,
-this will create a large estimation error if the direction is changed at some point. This however is why the game of pool is a good example to show the idea of a smart and adaptive kalman implementation.
+We also use the filter to predict values for any given length into the future by feeding back its estimations as actual state. 
+The quality of this prediction however depends on several factors, which we discuss in detail in \ref{implementation}.
 
 \subsection{Visual Recognition of moving elements}
 
-In order to create a state-vector input we to process we have to track the balls on the pool table. 
+In order to create a state-vector input we have to track the balls on the pool table. 
 Since we needed reproductable results we used stock-footage as well as our own videos and processed them with the Python implementation of openCV.
-These videos \ref{pic:pool-color} are put into an instance of simple video-processing steps to create a black and white mask of the ball contours as displayed in \ref{pic:pool-bw},
+These videos \cref{pic:pool-color} are put into an instance of simple video-processing steps to create a black and white mask of the ball contours as displayed in \cref{pic:pool-bw},
 where the center of the white pixel cluster is the ball we're looking for.
 
 \begin{figure}[H]
@@ -90,19 +116,7 @@ where the center of the white pixel cluster is the ball we're looking for.
     \label{pic:pool-bw}
 \end{figure}
 
-
-\subsection{Kalman-Filter} \label{kalman-desc}
-
-here comes some text
-
-\paragraph{Constant velocity model} 
-
-here comes some text
-
-\paragraph{Constant acceleration model}
-
-here comes some text
-
+This type of vision based tracking works reliably for our requirements.
 
 \section{Related Work}
 
@@ -122,54 +136,261 @@ Using different constraints and presumptions they were could physical parameters
 Mohamed and Schwarz \cite{schwarz} are using partly the same approach as we do to improve the results created by INS/GPS\footnote{Inertial Navigation System / Global Positioning System} Systems.
 However their approach only targets the 'Q' and 'R' parameters of the filter.
 
-Sarkka and Nunemmna Nummenmaa \cite{sarkka} created an adaptive kalman implementation which adapts itself to time-varying noise parameters. Since our input data is constant in this regard,
+Sarkka and Nummenmaa \cite{sarkka} created an adaptive kalman implementation which adapts itself to time-varying noise parameters. Since our input data is constant in this regard,
 we decided to simulate for the optimal filter parametrization instead of relying on the filter to adapt itself.
 
 Gabdulkhakova and Kropatsch \cite{kropatsch} use a kalman filter to create a video analysis tool for snooker games. 
 
-\section{Implementation}
-\subsection{differences between implementations}
+\section{Implementation} \label{implementation}
+In this section we're going to discuss the different implementations and their constraints. The filter implementations in section \cref{dynamic-q} and \cref{smart-filter} are derived from
+the basic implementation in \cref{kalman-basic}. At the end of this section we will provide a comparison of all filter types and their performance in our simulation.
 
-\subsection{CVM devel + Problems in Prediction}
-\subsection{Dyn CVM devel}
-\subsection{Smart Devel}
+\subsection{Kalman Filter} \label{kalman-basic}
 
-\section{Simulations}
+The basic layout and working mechanism of a kalman filter is in described in detail in \cite{kalman}. However in order to fully understand our improvements we provide a short explanation.
 
-\subsection{Structure of Simulation}
-optimal parameters
+Its purpose is to filter noisy or unreliable sensor data to get a better quality. Its doing this by comparing predictions made based on the model and actual measurements. 
+Depending on the filter gain it will use a bigger portion of either. This estimated value represents the actual state of the measured system and is used to make the next estimation.
 
-\subsection{Sampling}
+This is represented in \cref{eq1}
+
+\begin{equation} 
+    \label{eq1}
+    \hat{x}[n]=\tilde{x}[n]+K*(y[n]-C*\tilde{x}[n]-D*u[n])
+\end{equation}
+
+Where $K$ represents a factor, which determines the amount of measured values applied to the prediction to create a new estimation. It is defined as in \cref{eq2}, 
+where $\tilde{P}[n]$ is the prediction error from the current prediction, $C^T$ is a matrix to map our state vector to our system model and $S$ represents the combined error of estimation error and measurement noise.
+
+\begin{equation} 
+    \label{eq2}
+    K=\tilde{P}[n]*C^T+S^{-1}
+\end{equation}
+
+Every prediction which is used in \cref{eq1}, was previously calculated using the state transition model $A_d$:
+
+\begin{equation} 
+    \label{eq3}
+    \tilde{x}[n]=A_d*\hat{x}[n-1]+B_d*u[n-1]
+\end{equation}
+
+The important parts for our further development are $A_d$ in \cref{eq3} and $\tilde{P}[n]$ in \cref{eq2}. The state transition matrix $Ad$ defines the motion model of our filter.
+There are two principal models which we are going to examine: the constant velocity model (CVM) and constant acceleration model (CAM), which describes which parameter can be regarded as constant by the filter.
+The estimation error $\tilde{P}[n]$ is defined in \cref{eq4}:
+
+\begin{equation} 
+    \label{eq4}
+    \tilde{P}[n]=A_d*\hat{P}[n-1]*A_d^T+G_d*Q*G_d^T
+\end{equation}
+
+The element $Q$ is the important part here. It defines the amount of systemnoise in the whole filter process, which we discuss in \cref{dynamic-q}.
+
+\subsection{Dynamic Q-parameters} \label{dynamic-q}
+
+As we already discussed in \cref{intro}, the filter can't adapt to sudden changes in direction of the moving object. 
+The case where the ball collides with the cushion can be mitigated by choosing different values of $Q$ in \cref{eq4}.
+Thus the filter puts less trust in its own estimation and relies more on the measurement. By doing so it can adapt momentarily.
+We implemented a look-up table, where the current position is checked for proximity to a cushion.
+
+\subsection{Smart Filter} \label{smart-filter}
+
+In addition to the previous section we developed another improvement. In this case it can be assumend that the angle of incidence is equal to angle of reflection. 
+This assumption can be useful since this can be implemented in a single vector-multiplication expression. 
+
+Assuming that we have a velocity vector pointing in the direction of $x$ and $y$, the operation to mirror on the x-axis is as in \cref{eq5}:
+
+\begin{equation} 
+    \label{eq5}
+    \vec{v}_{mirror} = 
+    \left(\!
+    \begin{array}{c}
+      v_x \\
+      v_y
+    \end{array}
+    \!\right) *
+    \left(\!
+    \begin{array}{c}
+        -1 \\
+        1
+    \end{array}
+    \!\right)
+\end{equation}
+
+As in the previous section this operation can be performed, when the ball hits the cushion.
+
+
+\subsection{Filter performance comparison} \label{perf-comp}
+
+We developed a simulation, where we could test different parameters and scenarios to get consistent results. 
+We also used this simulation to determine the optimal value for the process noise in \cref{dynamic-q}. The results are shown in \cref{fig:sim-results}:
 
 \begin{figure}[H]
     \centering
     \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
-    \caption{Caption: Text}
-    \label{fig:placeholder}
+    \caption{Performance of different filter implementations for CVM and CAM}
+    \label{fig:sim-results}
 \end{figure}
 
+The blue column represents the filtered values, which were generated from noisy measurements compared the ground truth. 
+The orange column shows how much the prediction 30 frames in the future deviated from the ground truth.
+The effect of the dynamic process noise is negligable but the vector mirroring has a large impact on the accuracy on either motion models.
+It is especially interesting that the CAM model shows a better performance in this case. 
+This is due to the fact this model can be very accurate but is also very sensitive for error.
+
+Another impact the vector mirroring has on the time scale is show in \cref{fig:deviation-noise}:
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Performance of different filter implementations}
+    \label{fig:deviation-noise}
+\end{figure}
+
+This figure represents the distance to ground truth over time for the prediction 30 frames in the future. 
+The red areas are where the ball is close to the cushion. 
+Although the dynamic-q implementation is able to mitigate the overshoot problem, the prediction error rises quickly since the accuracy declines also with a higher process noise.
+The smart implementation however delivers constant accuracy regardless of proximity to the cushion.
+
+\section{Simulations}
+
+We simulated this smart implementation of the CVM with different technical parameters to examine its performance for predicting values 15, 30 or 60 frames in the future.
+Displayed are each distances from the prediction to the ground truth over the entire simulation.
+
+\subsection{Sampling}
+
+The first simulation altered the sampling-rate. In a real-world scenarion this would be the frame rate of the camera.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Impact of framerates on prediction accuracy}
+    \label{fig:framerate10}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Impact of framerates on prediction accuracy}
+    \label{fig:framerate30}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Impact of framerates on prediction accuracy}
+    \label{fig:framerate60}
+\end{figure}
+
+The sample rate has a certain impact on the quality of the prediction. However the the difference between 30 and 60 frames is not as big as between 10 and 30. 
+This depends greatly on the initial velocity of the ball. The anomaly at 30 frames with a sample rate of 10 fps is caused by the fact that due to the low sample rate 
+the filter just misses the point where the ball hits the cusion and isn't able to predict this.
+
 \subsection{Noise}
+
+The second simulation altered the amount of noise on the measurement and how the filter is able to cope with bad input data.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Impact of framerates on prediction accuracy}
+    \label{fig:noise2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Impact of framerates on prediction accuracy}
+    \label{fig:noise5}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Impact of framerates on prediction accuracy}
+    \label{fig:noise10}
+\end{figure}
+
+Although the amount of noise increased fivefold, the median stays almost constant compared to less noisy samples. The min and max values of deviation however change greatly on magnitude.
+This is a good indicator that the filter is actually able to work with worse measurements than we used in our simulation and is still able to produce reasonably accurate predictions well into the future.
+
 \subsection{Velocity}
 
-\section{Results}
+Lastly we tested the impact of different starting velocities, which has an influence of the distance, which the ball rolls between certain sample periods.
 
-\subsection{Real Video - Prediction vs. Filtered}
-\paragraph{No Ground Truth}
-\subsection{CVM vs. CAM}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Impact of framerates on prediction accuracy}
+    \label{fig:velocity300}
+\end{figure}
 
-\section{Future Work}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Impact of framerates on prediction accuracy}
+    \label{fig:velocity500}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Impact of framerates on prediction accuracy}
+    \label{fig:velocity700}
+\end{figure}
+
+We can see here that the starting velocity has barely any effect. 
+This is what we expected since the sample rate is high enough to give us sufficient data and we simulated different konfigurations in order to achieve the highest accuary possible.
+
+\section{Results with real footage}
+
+After evaluating that our filter works well within the simulation we tested it on real footage. 
+It performed as expected in the footage and gave reasonable good predictions.
+
+However because of imperfections in the tracking alorithm such as deviation what the center of the ball is and changing noise levels in the measurement, 
+the filter can't perform as good as in the simulation. Also the reflection-angle on the cushion was mathematically perfect in the simulation
+but can vary by small margins in a real scenario.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Filter test on real footage}
+    \label{fig:realfootage}
+\end{figure}
+
+Apart from the simulation we did not have data for the ground truth in this case. 
+The quality of the filter can solely be measured by the quality of its prediction. 
+
+As in \cref{perf-comp} mentioned, the CAM model is very sensitive to error. This gets very apparend in real world footage with the MSE of the CAM is only XX.XXdB compared to CVM with XX.XXdB.
 
 \section{Improvements}
-Abstand von Bande durch diskrete abtastung ungenau, weil zeitliche unschärfe entsteht (abprall zwischen zwei frames).
-Prediction müsste unabhängig von frames gemacht werden.
 
+An inherent problem with the nature of sampled values is that there is no prediction or estimation
+of the behaviour in between to sample points. It is reasonable to assume that the behavior between
+two sample points can be interpolated. But since this problem has edge cases, this more complicated.
 
-\subsection{AR App for Training}
-\subsection{Broadcasting}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Ball hits cushion between two sample points}
+    \label{fig:edge-case}
+\end{figure}
+
+As seen on \cref{fig:edge-case} the collision between the ball and the cushion is happens between sample 1 and 2. The code detects this and turns the velocity vector as described in \cref{smart-filter}.
+By the time of sample 3 the velocity vector points in the rihgt direction. The correct solution however is shown in \cref{fig:edge-case-sol}:
+The overshoot of sample 2 corrected and mirrored on the point of collision, which affects the following samples. This has a large positive impact on prediction accuracy as well as filter error.
+
+Our current version of the implementation does not has this correction yet but this could be implemented in the future.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \caption{Collision correction}
+    \label{fig:edge-case-sol}
+\end{figure}
 
 \section{Acknowledgement}
 
-T.Edeler wegen Vorlesung diesdas.
+We would like to thank Prof. Edeler for his input during the lecture which really helped developing the idea.
 
 \end{multicols}
 
