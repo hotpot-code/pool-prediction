@@ -101,6 +101,9 @@ class CAM_Filter():
             
         return (prePos, preVar)
 
+    def getVelocity(self):
+        return self.x_post[1,0], self.x_post[4,0]
+
     def py_ang(self, v1, v2):
         dot = v1[0]*v2[0] + v1[1]*v2[1]      # dot product
         det = v1[0]*v2[1] - v1[1]*v2[0]      # determinant

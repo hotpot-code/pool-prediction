@@ -37,6 +37,9 @@ class Ball():
         new_y = math.sin(angle) * forward[0] + math.cos(angle) * forward[1]
         self.forward = np.array([new_x, new_y])
 
+    def getVelocity(self):
+        return self.forward * self.velocity
+
     def getNoisedPosition(self):
         R = np.diag([self.noise, self.noise]) ** 2
         noised_position = np.random.multivariate_normal(np.array(self.position).flatten(), R)

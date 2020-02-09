@@ -27,6 +27,8 @@ class Simulation():
         self.mse_list = list()
         self.bank_time_span = list()
         self.filter_predictions = list()
+        self.velocities = list()
+        self.filter_velocities = list()
 
 
 
@@ -110,6 +112,9 @@ class Simulation():
         for i in range(0, len(filters)):
             filter_points.append(list())
 
+        for i in range(0, len(filters)):
+            self.filter_velocities.append(list())
+
         self.filter_predictions = list()
         for i in range(0, len(filters)):
             self.filter_predictions.append(list())
@@ -128,6 +133,8 @@ class Simulation():
                 frame, position, velocity, sensor_position, sim = PoolSimulation.update_from_csv(file, frame_no)
             noised_position = sensor_position
 
+            self.velocities.append(velocity)
+
             if sim.isBallNearBank:
                 if not near_bank:
                     bank_start_frame = frame_no
@@ -139,6 +146,7 @@ class Simulation():
 
             for i, custom_filter in enumerate(filters):
                 filter_points[i].append(custom_filter.dofilter(noised_position[0], noised_position[1]))
+                self.filter_velocities[i].append(custom_filter.getVelocity())
 
             noised_points.append(noised_position)
             self.points.append(position)
@@ -245,6 +253,28 @@ class Simulation():
 
         plt.show()
 
+    def show_mse_velocity_comparison_plot(self):
+
+        mse_velocity_list = list()
+        for i in range(0, len(self.filter_velocities)):
+            mse_velocity_list.append(10 * np.log10(self.residual(self.filter_velocities[i], self.velocities)))
+
+        x = np.arange(len(mse_velocity_list))
+        width = 0.35
+
+        plt.bar(x, mse_velocity_list, width, label='MSE of velocity')
+        for i, v in enumerate(mse_velocity_list):
+            plt.text(i - width / 2, v + 0.5, "{:10.2f}dB".format(v), color='blue', fontweight='bold', ha='center',
+                     va='bottom')
+
+        plt.ylabel('mse')
+        plt.xticks(x, [*self.names])
+        plt.title("Filter Comparison")
+
+        plt.legend()
+
+        plt.show()
+
     def show_prediction_plot(self, filter=0, pre_nos=(15, 30, 60)):
         
         for pre_no in pre_nos:
@@ -307,7 +337,8 @@ if __name__ == "__main__":
     smart_dyn_cvm = Smart_CVM_Filter(1.0 / 60, 350, 2.0, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(100, 1820, 100, 980).setRadius(25)
     cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 350, 2.0, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
 
-    filters = [cvm_dynamic, cam_dynamic, smart_cvm]
-    sim.run(filters, show_video=False, show_prediction=2, save_prediction=True, file="simulations/sim_2.0_700_60.csv")
+    filters = [smart_cvm, cam_smart]
+    sim.run(filters, show_video=True, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_700_60.csv")
+    #sim.show_mse_velocity_comparison_plot()
     #sim.show_mse_comparison_plot(pre_no=30)
-    sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
+    #sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
