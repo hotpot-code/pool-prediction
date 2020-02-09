@@ -28,6 +28,11 @@ def residual(points, ground_truth):
     mse = (rx ** 2 + ry ** 2).mean()
     return mse
 
+def get_mse_of_prediction(predictions, points, pre_no = 10, offset=30):
+    pre_pos = np.array(predictions)[offset:-pre_no, 0, pre_no]
+    points = np.array(points)[offset+pre_no:]
+    return 10 * np.log10(residual(pre_pos, points))
+
 vh = VideoHandler("pool_3")
 
 p1 = (vh.xLeft, vh.yTop) #top left
@@ -37,7 +42,8 @@ p4 = (vh.xLeft, vh.yBot) # bottom left
 
 #kalman = MyFilter(0.01666, 600.0, 0.001)
 #pool3
-kalman = Smart_CVM_Filter(0.016, 600, 0.25)
+kalman = Smart_CVM_Filter(0.016, 400, 0.25)
+#kalman = Smart_CAM_Filter(0.016, 36, 0.25)
 #pool1
 #kalman = Smart_CVM_Filter(0.033, 500, 0.1)
 #kalman = Smart_CAM_Filter(0.016, 820, 0.25)
@@ -51,6 +57,7 @@ frame_no = 0
 
 last_points_filtered = list()
 last_points = list()
+filter_predictions = list()
 
 abweichung_x = 0
 abweichung_y = 0
@@ -109,15 +116,10 @@ while True:
     for i in range(0, len(prePos), 2):
         cv2.ellipse(frame, (prePos[i][0], prePos[i][1]), (int(1 * np.sqrt(preVar[i][0])), int(1 * np.sqrt(preVar[i][1]))), 0, 0, 360, (0, 200, 255), 2)
 
-    #prediction = kalman.getPredictionAfterSec(0.33)
-    #cv2.line(frame, (int(filterd[0]),int(filterd[1])), (int(prediction[0]),int(prediction[1])), (0, 0, 255), 2)
 
-    # if x is not None:
-    #     abweichung_x += abs(x_correct - x)
-    #     abweichung_y += abs(y_correct - y)
-
-    #     print("abweichung x: " + str(abweichung_x/(frame_no + 1)))
-    #     print("abweichung y: " + str(abweichung_y/(frame_no + 1)))
+    filter_predictions.append([])
+    pre_pos, pre_var = kalman.getPredictions(max_count=61)
+    filter_predictions[len(filter_predictions) - 1] = [pre_pos, pre_var]
 
         
     cv2.circle(frame, (int(filterd[0]), int(filterd[1])), 2, (255, 255, 0), 2)
@@ -138,4 +140,5 @@ cv2.destroyWindow("Frame")
 cv2.waitKey(1000)
 vh.vs.release()
 
-print(10 * math.log10(residual(last_points_filtered, last_points)))
+print("MSE for prediction:")
+print(get_mse_of_prediction(filter_predictions, last_points, 30))
