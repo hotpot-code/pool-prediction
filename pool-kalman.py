@@ -96,26 +96,7 @@ while True:
         [kalman.x_post[1]],
         [kalman.x_post[3]]
     ])
-    tempo = np.linalg.norm(velocity)
-    # 170cm / 600px
-    #JN: 9' Table: Inner boundary: 254cm @ 654px -> 0.0045 px/m
-    tempoPerMeter = tempo * 0.0045 #former 0.028
-    tempoRounded = int(tempoPerMeter * 100) / 100
 
-    font                   = cv2.FONT_HERSHEY_SIMPLEX
-    bottomLeftCornerOfText = (10,30)
-    fontScale              = 0.5
-    fontColor              = (255,255,255)
-    lineType               = 2
-
-    cv2.putText(frame,str(tempoRounded) + ' m/s', 
-        bottomLeftCornerOfText, 
-        font, 
-        fontScale,
-        fontColor,
-        lineType)
-
-    #print(tempo)
     last_points_filtered.append(filterd)
     if len(last_points_filtered) > 1:
         last_point = None
