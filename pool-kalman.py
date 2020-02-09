@@ -42,8 +42,8 @@ p4 = (vh.xLeft, vh.yBot) # bottom left
 
 #kalman = MyFilter(0.01666, 600.0, 0.001)
 #pool3
-#kalman = Smart_CVM_Filter(0.016, 400, 0.25)
-kalman = Smart_CAM_Filter(0.016, 36, 0.25)
+kalman = Smart_CVM_Filter(0.016, 400, 0.25)
+#kalman = Smart_CAM_Filter(0.016, 36, 0.25)
 #pool1
 #kalman = Smart_CVM_Filter(0.033, 500, 0.1)
 #kalman = Smart_CAM_Filter(0.016, 820, 0.25)
@@ -130,16 +130,15 @@ while True:
     cv2.line(frame, p4, p1, (255, 255, 255), 2) #left bank 
     
     # show the frame to our screen
-    #cv2.imshow("Frame", frame)
-    #cv2.waitKey(14)
+    cv2.imshow("Frame", frame)
+    cv2.waitKey(14)
     frame_no += 1
 
     
 cv2.waitKey(1000)
-#cv2.destroyWindow("Frame")
+cv2.destroyWindow("Frame")
 cv2.waitKey(1000)
 vh.vs.release()
 
-print(get_mse_of_prediction(filter_predictions, last_points, 60))
-
-print(10 * math.log10(residual(last_points_filtered, last_points)))
+print("MSE for prediction:")
+print(get_mse_of_prediction(filter_predictions, last_points, 30))
