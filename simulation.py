@@ -15,9 +15,10 @@ from filter.filter_constant_acceleration import CAM_Filter
 
 class Simulation():
 
-    def __init__(self, noise = 1.1, start_velocity = 660, update_time_in_secs = 0.016):
+    def __init__(self, noise = 1.1, start_velocity = 660, update_time_in_secs = 0.016, name="simulation"):
         self.noise = noise
         self.update_time_in_secs = update_time_in_secs
+        self.name = name
         # https://billiards.colostate.edu/faq/speed/typical/
         self.start_velocity = start_velocity
 
@@ -315,6 +316,39 @@ class Simulation():
         plt.show()
 
 
+def show_prediction_boxplot(simulations, filter=0, pre_nos=(15, 30, 60)):
+
+    def set_box_color(bp, color):
+        plt.setp(bp['boxes'], color=color)
+        plt.setp(bp['whiskers'], color=color)
+        plt.setp(bp['caps'], color=color)
+        plt.setp(bp['medians'], color=color)
+
+    space_between_groups = 0.8
+    space_between_plots = 0.2
+
+    colors = ["#D7191C", "#2C7BB6", "#000000"]
+
+    for i in range(0, len(simulations)):
+        residuals = list()
+        sim = simulations[i]
+        for pre_no in pre_nos:
+            residuals.append(sim.get_prediction_residuals(filter, pre_no))
+        bplot = plt.boxplot(residuals, positions=np.array(range(len(residuals)))*len(simulations) * space_between_groups+(i * space_between_plots * len(simulations) - ((space_between_plots * len(simulations) * (len(simulations) - 1)) / 2)), showfliers=False)
+        set_box_color(bplot, colors[i])
+        plt.plot([], c=colors[i], label=sim.name)
+
+    plt.xticks(np.array(range(0, len(pre_nos) * len(simulations), len(simulations))) * space_between_groups, np.array(pre_nos))
+    plt.xlabel('prediction # frames ago')
+    plt.ylabel('distance to ground truth')
+    #plt.ylim(top=530)
+    plt.title("Predictions")
+
+    plt.legend()
+
+    plt.grid(axis="y")
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
 
@@ -328,7 +362,9 @@ if __name__ == "__main__":
     #             sim = Simulation(noise=noise, start_velocity=vel, update_time_in_secs=(1.0 / fps))
     #             sim.create_csv("simulations/sim_" + str(noise) + "_" + str(vel) + "_" + str(fps) + ".csv")
 
-    sim = Simulation()
+    sim = Simulation(name="10 FPS")
+    sim2 = Simulation(name="30 FPS")
+    sim3 = Simulation(name="60 FPS")
 
     normal_cam = CAM_Filter(1.0/60, 45290, 2.0, name="CAM Filter")
     normal_cvm = Smart_CVM_Filter(1.0 / 60, 2210, 2.0, name="CVM Filter", smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
@@ -341,8 +377,12 @@ if __name__ == "__main__":
     cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 350, 2.0, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
 
     filters = [normal_cvm, cvm_dynamic, smart_cvm]
-    sim.run(filters, show_video=False, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_500_60.csv")
+    sim.run(filters, show_video=False, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_700_10.csv")
+    sim2.run(filters, show_video=False, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_500_30.csv")
+    sim3.run(filters, show_video=False, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_500_60.csv")
     #sim.show_mse_velocity_comparison_plot()
     #sim.show_mse_comparison_plot(pre_no=30)
-    #sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
-    sim.show_prediction_plot(filters=(1, 2), pre_nos=[30], show_bank=True)
+    sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
+    #sim.show_prediction_plot(filters=(1, 2), pre_nos=[30], show_bank=True)
+
+    show_prediction_boxplot([sim, sim2, sim3], 2)
