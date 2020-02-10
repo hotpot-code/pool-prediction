@@ -56,7 +56,7 @@ kalman = Smart_CVM_Filter(0.016, 400, 0.25)
 kalman.setBoundaries(vh.xLeft, vh.xRight, vh.yTop, vh.yBot)
 
 # instantiate ball detector (use specific parameters for video)
-whiteBallDetection = BallDetection(*vh.giveParameters())
+whiteBallDetection = BallDetection(*vh.giveParameters(), debug=False)
 
 # frame counter
 frame_no = 0
