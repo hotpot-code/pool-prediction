@@ -236,7 +236,7 @@ We also used this simulation to determine the optimal value for the process nois
     \label{fig:sim-results}
 \end{figure}
 
-The blue column represents the filtered values, which were generated from noisy measurements compared the ground truth. 
+The blue column represents the quality of the filter output against the ground truth. 
 The orange column shows how much the prediction 30 frames in the future deviated from the ground truth.
 The effect of the dynamic process noise is negligable but the vector mirroring has a large impact on the accuracy on either motion models.
 It is especially interesting that the CAM model shows a better performance in this case. 
@@ -253,13 +253,13 @@ Another impact the vector mirroring has on the time scale is show in \cref{fig:d
 
 This figure represents the distance to ground truth over time for the prediction 30 frames in the future. 
 The red areas are where the ball is close to the cushion. 
-Although the dynamic-q implementation is able to mitigate the overshoot problem, the prediction error rises quickly since the accuracy declines also with a higher process noise.
-The smart implementation however delivers constant accuracy regardless of proximity to the cushion.
+Although the dynamic-q enhancement mitigates the overshoot problem, the prediction error rises quickly since the prediction accuracy degrades with a higher process noise.
+The smart implementation however delivers constant accuracy regardless of any edge cases.
 
 \section{Simulations}
 
 We simulated this smart implementation of the CVM with different technical parameters to examine its performance for predicting values 15, 30 or 60 frames in the future.
-Displayed are each distances from the prediction to the ground truth over the entire simulation.
+Displayed is the MSE of the prediction compared to the ground truth.
 
 \subsection{Sampling}
 
@@ -287,7 +287,7 @@ The second simulation altered the amount of noise on the measurement and how the
     \label{fig:noise2}
 \end{figure}
 
-Although the amount of noise increased fivefold, the median stays almost constant compared to less noisy samples. The min and max values of deviation however change greatly on magnitude.
+Although the amount of noise increased fivefold, the median stays within the same magnitude of error compared to less noisy samples. The min and max values of deviation however change greatly on magnitude.
 This is a good indicator that the filter is actually able to work with worse measurements than we used in our simulation and is still able to produce reasonably accurate predictions well into the future.
 
 \subsection{Velocity}
@@ -309,7 +309,7 @@ This is what we expected since the sample rate is high enough to give us suffici
 After evaluating that our filter works well within the simulation we tested it on real footage. 
 It performed as expected in the footage and gave reasonable good predictions.
 
-However because of imperfections in the tracking alorithm such as deviation what the center of the ball is and changing noise levels in the measurement, 
+However because of deviations in the tracking alorithm such determining the exact center of the ball and changing noise levels in the measurement, 
 the filter can't perform as good as in the simulation. Also the reflection-angle on the cushion was mathematically perfect in the simulation
 but can vary by small margins in a real scenario.
 
@@ -323,13 +323,14 @@ but can vary by small margins in a real scenario.
 Apart from the simulation we did not have data for the ground truth in this case. 
 The quality of the filter can solely be measured by the quality of its prediction. 
 
-As in \cref{perf-comp} mentioned, the CAM model is very sensitive to error. This gets very apparend in real world footage with the MSE (for the prediction of the next 30 frames) of the CVM is only 15.39dB compared to CAM with 21.01dB.
+As in \cref{perf-comp} mentioned, the CAM model is very sensitive to error. This is especially crucial in real world footage where the MSE (for the prediction of the next 30 frames) of the CVM is only 15.39dB compared to CAM with 21.01dB
+Although the CAM is theoretically superior in quality, its performance is worse in this case due to the resons pointed out in \cref{perf-comp}.
 
 \section{Improvements}
 
-An inherent problem with the nature of sampled values is that there is no prediction or estimation
-of the behaviour in between to sample points. It is reasonable to assume that the behavior between
-two sample points can be interpolated. But since this problem has edge cases, this more complicated.
+An inherent problem with the nature of discrete values is that there are no realiable values in between to sample points. 
+Although it is reasonable to assume that especially in linear cases the behavior between two sample points can interpolated, 
+it is more complicated in this case due to the edge cases.
 
 \begin{figure}[H]
     \centering
@@ -338,11 +339,10 @@ two sample points can be interpolated. But since this problem has edge cases, th
     \label{fig:edge-case}
 \end{figure}
 
-As seen on \cref{fig:edge-case} the collision between the ball and the cushion is happens between sample 1 and 2. The code detects this and turns the velocity vector as described in \cref{smart-filter}.
-By the time of sample 3 the velocity vector points in the right direction but with a small offset error. The correct solution however is shown in \cref{fig:edge-case-sol}:
+As seen on \cref{fig:edge-case} the collision between the ball and the cushion is happens between sample 1 and 2. 
+The filter detects this and turns the velocity vector as described in \cref{smart-filter}.
+By the time of sample 3 the vector points in the right direction but with a offset. The correct solution however is shown in \cref{fig:edge-case-sol}:
 The overshoot of sample 2 is corrected and mirrored on the point of collision, which affects the following samples. This has a large positive impact on prediction accuracy as well as filter error.
-
-Our current version of the implementation does not has this correction yet but this could be implemented in the future.
 
 \begin{figure}[H]
     \centering
@@ -350,6 +350,8 @@ Our current version of the implementation does not has this correction yet but t
     \caption{Collision correction}
     \label{fig:edge-case-sol}
 \end{figure}
+
+This enhancement is not implemented yet but is a starting point for further improvement.
 
 \section{Acknowledgement}
 
