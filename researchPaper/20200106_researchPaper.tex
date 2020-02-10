@@ -196,7 +196,7 @@ We previously mentioned in \cref{intro}, that the filter can't adapt to sudden c
 The case where the ball collides with the cushion can be mitigated by choosing a different values for $Q$ in \cref{eq4} within the crucial time window.
 Thus the filter relies more on the measurement than the estimations. By doing so it can adapt momentarily.
 We implemented a look-up table and constantly check every sample for proximity to a cushion.
-In order to parametrize the filter optimal, we ran a simluation to iterate over several values for $Q$. The result is shown in \cref{fig:dyn-sim}:
+In order to parametrize the filter optimal, we ran a simulation to iterate over several values for $Q$. The result is shown in \cref{fig:dyn-sim}:
 
 \begin{figure} [H]
     \centering
@@ -251,7 +251,7 @@ We also used this simulation to determine the optimal value for the process nois
 \end{figure}
 
 The orange column represents the quality of the filter output against the ground truth. 
-The effect can be seen very cleary when compared to the $no filter$ graph. 
+The effect can be seen very clearly when compared to the $no filter$ graph. 
 The blue column shows how much the prediction 30 frames in the future deviated from the ground truth.
 The effect of the dynamic process noise is negligible but the vector mirroring has a large impact on the accuracy on either motion models.
 It is especially interesting that the CAM model shows a better performance in this particular case. 
@@ -324,7 +324,7 @@ We also simulated different configurations in order to achieve the highest accur
 After evaluating that our filter works well within the simulation, we tested it on real footage. 
 It performed as expected and gave reasonably good predictions.
 
-However, because of deviations in the tracking alorithm such determining the exact center of the ball and changing noise levels in the measurement, 
+However, because of deviations in the tracking algorithm such determining the exact center of the ball and changing noise levels in the measurement, 
 the filter performance is inferior to the simulation. Also the reflection-angle on the cushion was mathematically perfect in the simulation
 but can vary by small margins in a real scenario.
 
@@ -339,11 +339,11 @@ Apart from the simulation we did not have data for the ground truth in this case
 The quality of the filter can solely be measured by the quality of its prediction. 
 
 As in \cref{perf-comp} mentioned, the CAM model is very sensitive to error. This is especially crucial in real world footage where the MSE (for the prediction of the next 30 frames) of the CVM is only 15.39dB compared to CAM with 21.01dB
-Although the CAM is theoretically superior in quality, its performance is worse in this case due to the resons pointed out in \cref{perf-comp}.
+Although the CAM is theoretically superior in quality, its performance is worse in this case due to the reasons pointed out in \cref{perf-comp}.
 
 \section{Improvements}
 
-An inherent problem with the nature of discrete values is that there are no realiable values in between to sample points. 
+An inherent problem with the nature of discrete values is that there are no reliable values in between to sample points. 
 Although it is reasonable to assume that especially in linear cases the behavior between two sample points can interpolated, 
 it is more complicated in this case due to the edge cases.
 
