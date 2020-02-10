@@ -236,13 +236,14 @@ We also used this simulation to determine the optimal value for the process nois
     \label{fig:sim-results}
 \end{figure}
 
-The blue column represents the quality of the filter output against the ground truth. 
-The orange column shows how much the prediction 30 frames in the future deviated from the ground truth.
+The orange column represents the quality of the filter output against the ground truth. 
+The effect can be seen very cleary when compared to the $no filter$ graph. 
+The blue column shows how much the prediction 30 frames in the future deviated from the ground truth.
 The effect of the dynamic process noise is negligible but the vector mirroring has a large impact on the accuracy on either motion models.
-It is especially interesting that the CAM model shows a better performance in this case. 
+It is especially interesting that the CAM model shows a better performance in this particular case. 
 This is due to the fact this model can be very accurate but is also very sensitive for error.
 
-Another impact the vector mirroring has on the time scale is show in \cref{fig:deviation-noise}:
+Another impact the vector mirroring has is shown in \cref{fig:deviation-noise} on the time scale:
 
 \begin{figure}[H]
     \centering
@@ -251,14 +252,14 @@ Another impact the vector mirroring has on the time scale is show in \cref{fig:d
     \label{fig:deviation-noise}
 \end{figure}
 
-This figure represents the distance to ground truth over time for the prediction 30 frames in the future. 
+This figure represents the distance to ground truth over time for the prediction 30 frames into the future. 
 The red areas are where the ball is close to the cushion. 
 Although the dynamic-q enhancement mitigates the overshoot problem, the prediction error rises quickly since the prediction accuracy degrades with a higher process noise.
 The smart implementation however delivers constant accuracy regardless of any edge cases.
 
 \section{Simulations}
 
-We simulated this smart implementation of the CVM with different technical parameters to examine its performance for predicting values 15, 30 or 60 frames in the future.
+We simulated the smart implementation of the CVM with different technical parameters to examine its performance for predicting values 15, 30 or 60 frames in the future.
 Displayed is the MSE of the prediction compared to the ground truth.
 
 \subsection{Sampling}
@@ -273,8 +274,7 @@ The first simulation altered the sampling-rate. In a real-world scenario this wo
 \end{figure}
 
 The sample rate has a certain impact on the quality of the prediction. However the the difference between 30 and 60 frames is not as big as between 10 and 30. 
-This depends greatly on the initial velocity of the ball. The anomaly at 30 frames with a sample rate of 10 fps is caused by the fact that due to the low sample rate 
-the filter just misses the point where the ball hits the cushion and isn't able to predict this.
+This depends greatly on the initial velocity of the ball. Since the most cameras support framerates of at least 30fps, this performance is sufficient.
 
 \subsection{Noise}
 
@@ -292,7 +292,7 @@ This is a good indicator that the filter is actually able to work with worse mea
 
 \subsection{Velocity}
 
-Lastly we tested the impact of different starting velocities, which has an influence of the distance, which the ball rolls between certain sample periods.
+Lastly we tested the impact of different starting velocities on the distance, which the ball rolls between the sample periods and how this affects the performance:
 
 \begin{figure}[H]
     \centering
@@ -301,16 +301,17 @@ Lastly we tested the impact of different starting velocities, which has an influ
     \label{fig:velocity300}
 \end{figure}
 
-We can see here that the starting velocity has barely any effect. 
-This is what we expected since the sample rate is high enough to give us sufficient data and we simulated different configurations in order to achieve the highest accuracy possible.
+It shows that the starting velocity has barely any effect. 
+This is what we expected since the sample rate is high enough to provide sufficient data. 
+We also simulated different configurations in order to achieve the highest accuracy possible.
 
 \section{Results with real footage}
 
-After evaluating that our filter works well within the simulation we tested it on real footage. 
-It performed as expected in the footage and gave reasonable good predictions.
+After evaluating that our filter works well within the simulation, we tested it on real footage. 
+It performed as expected and gave reasonably good predictions.
 
 However, because of deviations in the tracking alorithm such determining the exact center of the ball and changing noise levels in the measurement, 
-the filter can't perform as good as in the simulation. Also the reflection-angle on the cushion was mathematically perfect in the simulation
+the filter performance is inferior to the simulation. Also the reflection-angle on the cushion was mathematically perfect in the simulation
 but can vary by small margins in a real scenario.
 
 \begin{figure}[H]
