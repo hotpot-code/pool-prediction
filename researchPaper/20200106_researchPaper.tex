@@ -196,6 +196,20 @@ We previously mentioned in \cref{intro}, that the filter can't adapt to sudden c
 The case where the ball collides with the cushion can be mitigated by choosing a different values for $Q$ in \cref{eq4} within the crucial time window.
 Thus the filter relies more on the measurement than the estimations. By doing so it can adapt momentarily.
 We implemented a look-up table and constantly check every sample for proximity to a cushion.
+In order to parametrize the filter optimal, we ran a simluation to iterate over several values for $Q$. The result is shown in \cref{fig:dyn-sim}:
+
+\begin{figure} [H]
+    \centering
+    \fbox{\includegraphics[width=0.47\textwidth]{dynamic_pn.png}}
+    \caption{Simulation for optimal Q-Parameters}
+    \label{fig:dyn-sim}
+\end{figure}
+
+The figure shows the two different $Q$ parameters for the two different operating modes: normal or proximity to cushion. 
+The color scale represents the achieved MSE with this parametrization: green means better.
+There is clearly a sweetspot for the optimal parametrization, which we chose to parametrize the filter with.
+Although the optimal area continues further up the ordinate, it does not make sense to look for optimal parametrization there
+because increasing these values would mean to approach the behavior of the sensor what wouldn't be beneficial.
 
 \subsection{Smart Filter} \label{smart-filter}
 
