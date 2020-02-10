@@ -66,11 +66,11 @@
 \maketitle
 
 \begin{abstract}
-In this article we're discussing an implementation of a Kalman-filter \cite{kalman} to filter and predict the movement of balls on a pool table. 
-We discuss the reasoning why we implemented the filter as a constant velocity model and its weak points in this situation.
-Since the performance of the filter deteriorates in cases of a rapid change in direction we derived two different implementations with adaptive behaviour.
+In this article we discuss an implementation of the Kalman-filter \cite{kalman} to improve measurement quality and predict the movement of balls on a pool table. 
+We are going to point out the reasoning why we implemented the filter as a constant velocity model and its weak points in this situation.
+Since the performance of the filter deteriorates in cases of a rapid change in direction, we derived two different implementations with adaptive behaviour.
 The implementations were tested in a simulator and with real world video footage of a pool table.
-In the end we compared the performaces of each filter to another.
+In the end we compared the performaces of each filter implementation.
 
 \end{abstract}
 
@@ -370,27 +370,27 @@ two sample points can be interpolated. But since this problem has edge cases, th
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \fbox{\includegraphics[width=0.47\textwidth]{prediction_error.PNG}}
     \caption{Ball hits cushion between two sample points}
     \label{fig:edge-case}
 \end{figure}
 
 As seen on \cref{fig:edge-case} the collision between the ball and the cushion is happens between sample 1 and 2. The code detects this and turns the velocity vector as described in \cref{smart-filter}.
-By the time of sample 3 the velocity vector points in the rihgt direction. The correct solution however is shown in \cref{fig:edge-case-sol}:
-The overshoot of sample 2 corrected and mirrored on the point of collision, which affects the following samples. This has a large positive impact on prediction accuracy as well as filter error.
+By the time of sample 3 the velocity vector points in the right direction but with a small offset error. The correct solution however is shown in \cref{fig:edge-case-sol}:
+The overshoot of sample 2 is corrected and mirrored on the point of collision, which affects the following samples. This has a large positive impact on prediction accuracy as well as filter error.
 
 Our current version of the implementation does not has this correction yet but this could be implemented in the future.
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \fbox{\includegraphics[width=0.47\textwidth]{prediction_correction.PNG}}
     \caption{Collision correction}
     \label{fig:edge-case-sol}
 \end{figure}
 
 \section{Acknowledgement}
 
-We would like to thank Prof. Edeler for his input during the lecture which really helped developing the idea.
+We would like to thank Prof. Edeler for his input during the lecture which really helped to further develop the idea.
 
 \end{multicols}
 
