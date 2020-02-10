@@ -150,16 +150,17 @@ the basic implementation in \cref{kalman-basic}. At the end of this section we w
 
 \subsection{Kalman Filter} \label{kalman-basic}
 
-The basic layout and working mechanism of a kalman filter is in described in detail in \cite{kalman}. However in order to fully understand our improvements we provide a short explanation.
+The basic layout and working mechanism of a kalman filter is in described in detail in \cite{kalman}. 
+However in order to fully understand our improvements we provide an introduction to the crucial parts of the kalman filter.
 
-Its purpose is to filter noisy or unreliable sensor data to get a better quality. Its doing this by comparing predictions made based on the model and actual measurements. 
+Its purpose is to filter noisy or unreliable sensor data. Its doing this by comparing predictions made based on the model and actual measurements. 
 Depending on the filter gain it will use a bigger portion of either. This estimated value represents the actual state of the measured system and is used to make the next estimation.
 
 This is represented in \cref{eq1}
 
 \begin{equation} 
     \label{eq1}
-    \hat{x}[n]=\tilde{x}[n]+K*(y[n]-C*\tilde{x}[n]-D*u[n])
+    \hat{x}[n]=\tilde{x}[n]+K*(y[n]-C*\tilde{x}[n])
 \end{equation}
 
 Where $K$ represents a factor, which determines the amount of measured values applied to the prediction to create a new estimation. It is defined as in \cref{eq2}, 
@@ -174,11 +175,12 @@ Every prediction which is used in \cref{eq1}, was previously calculated using th
 
 \begin{equation} 
     \label{eq3}
-    \tilde{x}[n]=A_d*\hat{x}[n-1]+B_d*u[n-1]
+    \tilde{x}[n]=A_d*\hat{x}[n-1]
 \end{equation}
 
 The important parts for our further development are $A_d$ in \cref{eq3} and $\tilde{P}[n]$ in \cref{eq2}. The state transition matrix $Ad$ defines the motion model of our filter.
-There are two principal models which we are going to examine: the constant velocity model (CVM) and constant acceleration model (CAM), which describes which parameter can be regarded as constant by the filter.
+There are two principal models which we are going to examine: 
+the constant velocity model (CVM) and constant acceleration model (CAM). This determines the state transition matrix $A_d$ and defines the constant component: velocity or acceleration.
 The estimation error $\tilde{P}[n]$ is defined in \cref{eq4}:
 
 \begin{equation} 
@@ -186,19 +188,19 @@ The estimation error $\tilde{P}[n]$ is defined in \cref{eq4}:
     \tilde{P}[n]=A_d*\hat{P}[n-1]*A_d^T+G_d*Q*G_d^T
 \end{equation}
 
-The element $Q$ is the important part here. It defines the amount of systemnoise in the whole filter process, which we discuss in \cref{dynamic-q}.
+The element $Q$ is the important part here. It defines the amount of systemnoise in the whole filter process, which we are going to discuss in \cref{dynamic-q}.
 
 \subsection{Dynamic Q-parameters} \label{dynamic-q}
 
-As we already discussed in \cref{intro}, the filter can't adapt to sudden changes in direction of the moving object. 
-The case where the ball collides with the cushion can be mitigated by choosing different values of $Q$ in \cref{eq4}.
-Thus the filter puts less trust in its own estimation and relies more on the measurement. By doing so it can adapt momentarily.
-We implemented a look-up table, where the current position is checked for proximity to a cushion.
+We previously mentioned in \cref{intro}, that the filter can't adapt to sudden changes in direction of the moving object. 
+The case where the ball collides with the cushion can be mitigated by choosing a different values for $Q$ in \cref{eq4} within the crucial time window.
+Thus the filter relies more on the measurement than the estimations. By doing so it can adapt momentarily.
+We implemented a look-up table and constantly check every sample for proximity to a cushion.
 
 \subsection{Smart Filter} \label{smart-filter}
 
 In addition to the previous section we developed another improvement. In this case it can be assumend that the angle of incidence is equal to angle of reflection. 
-This assumption can be useful since this can be implemented in a single vector-multiplication expression. 
+With this assumption we can now implement the reflection with a single vector-multiplication expression. 
 
 Assuming that we have a velocity vector pointing in the direction of $x$ and $y$, the operation to mirror on the x-axis is as in \cref{eq5}:
 
