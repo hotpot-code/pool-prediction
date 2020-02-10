@@ -240,18 +240,20 @@ class Simulation():
             pre_mse_list.append(self.get_mse_of_prediction(i, pre_no=pre_no))
         pre_mse_list.append(0)
 
-        plt.bar(x - width/2, self.mse_list, width, label='MSE of position')
+        plt.barh(x - width/2, self.mse_list, width, label='MSE of position', zorder=3, color="#ff9a50")
         for i, v in enumerate(self.mse_list):
-            plt.text(i - width/2, v + 0.5,  "{:10.2f}dB".format(v), color='blue', fontweight='bold', ha='center', va='bottom')
-        plt.bar(x + width/2, pre_mse_list, width, label='MSE prediction %d frames ago' % pre_no)
+            plt.text(v - 0.2, i - width/2,  "{:10.2f}dB".format(v), color='black', fontweight='bold', ha='right', va='center')
+        plt.barh(x + width/2, pre_mse_list, width, label='MSE prediction %d frames ago' % pre_no, zorder=3, color="#44a9f2")
         for i, v in enumerate(pre_mse_list):
-            plt.text(i + width/2, v + 0.5,  "{:10.2f}dB".format(v), color='orange', fontweight='bold', ha='center', va='bottom')
-        plt.ylabel('mse')
-        plt.xticks(x, [*self.names, "no Filter"])
+            if v > 0:
+                plt.text(v - 0.2, i + width/2,  "{:10.2f}dB".format(v), color='black', fontweight='bold', ha='right', va='center')
+        plt.xlabel('MSE in dB')
+        plt.yticks(x, [*self.names, "no Filter"])
+        plt.gca().invert_yaxis()
         plt.title("Filter Comparison")
 
         plt.legend()
-
+        plt.grid(axis="x", zorder=0)
         plt.show()
 
     def show_mse_velocity_comparison_plot(self):
@@ -362,9 +364,7 @@ if __name__ == "__main__":
     #             sim = Simulation(noise=noise, start_velocity=vel, update_time_in_secs=(1.0 / fps))
     #             sim.create_csv("simulations/sim_" + str(noise) + "_" + str(vel) + "_" + str(fps) + ".csv")
 
-    sim = Simulation(name="10 FPS")
-    sim2 = Simulation(name="30 FPS")
-    sim3 = Simulation(name="60 FPS")
+    sim = Simulation()
 
     normal_cam = CAM_Filter(1.0/60, 45290, 2.0, name="CAM Filter")
     normal_cvm = Smart_CVM_Filter(1.0 / 60, 2210, 2.0, name="CVM Filter", smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
@@ -376,13 +376,11 @@ if __name__ == "__main__":
     smart_dyn_cvm = Smart_CVM_Filter(1.0 / 60, 350, 2.0, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(100, 1820, 100, 980).setRadius(25)
     cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 350, 2.0, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
 
-    filters = [normal_cvm, cvm_dynamic, smart_cvm]
-    sim.run(filters, show_video=False, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_700_10.csv")
-    sim2.run(filters, show_video=False, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_500_30.csv")
-    sim3.run(filters, show_video=False, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_500_60.csv")
+    filters = [normal_cvm, normal_cam, cvm_dynamic, cam_dynamic, smart_cvm, cam_smart]
+    sim.run(filters, show_video=False, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_500_60.csv")
     #sim.show_mse_velocity_comparison_plot()
-    #sim.show_mse_comparison_plot(pre_no=30)
-    sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
+    sim.show_mse_comparison_plot(pre_no=30)
+    #sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
     #sim.show_prediction_plot(filters=(1, 2), pre_nos=[30], show_bank=True)
 
-    show_prediction_boxplot([sim, sim2, sim3], 2)
+    #show_prediction_boxplot([sim, sim2, sim3], 2)
