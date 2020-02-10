@@ -66,11 +66,11 @@
 \maketitle
 
 \begin{abstract}
-In this article we discuss an implementation of the Kalman-filter \cite{kalman} to improve measurement quality and predict the movement of balls on a pool table. 
+In this article we are goinbg to discuss an implementation of the Kalman-filter \cite{kalman} to improve measurement quality and predict the movement of balls on a pool table. 
 We are going to point out the reasoning why we implemented the filter as a constant velocity model and its weak points in this situation.
 Since the performance of the filter deteriorates in cases of a rapid change in direction, we derived two different implementations with adaptive behaviour.
 The implementations were tested in a simulator and with real world video footage of a pool table.
-In the end we compared the performaces of each filter implementation.
+We conclude this paper with a performance evaluation of the implementation and provide a proposal to further increase accuracy.
 
 \end{abstract}
 
@@ -84,8 +84,8 @@ In the end we compared the performaces of each filter implementation.
 At first glance the game of pool is very suitable to examine the behaviour of a kalman-filter enhanced tracking system based on pure visual tracking. 
 The surface of a pool table is made of a thin fabric which covers a hard surface i.e. slate or granite.
 The balls nowadays are usually made out of resin. This combination of materials creates very small rolling resistance and the balls behave almost fully elastic on collision.
-Also with only 2 DOF\footnote{Dimensions Of Freedom - determines the possible rotation or translation along each given axis} a basic kalman filter implementation is fairly simple in this regard. 
-But when two balls hit each other or a cushion, the velocity vector changes its orientation instantly. 
+Since this is only a 2 DOF\footnote{Dimensions Of Freedom - determines the possible rotation or translation along each given axis} problem, this can be solved with a simple linear kalman filter implementation. 
+The problem is, when two balls hit each other or a cushion the velocity vector changes its orientation instantly. 
 If this isn't taken into account, the filter needs some time to adapt to the new direction of movement and will produce wrong estimations during this time.
 
 This behaviour is independent of the type of kalman implementation being CVM or CAM (see \cref{kalman-basic}).
@@ -93,13 +93,13 @@ A kalman filter will assume the direction of movement on any given sample is abo
 It will therefore create wrong estimations if the directon of movement changes drastically in a short period of time. The time the filter needs to recover depends on the filter gain.
 
 We also use the filter to predict values for any given length into the future by feeding back its estimations as actual state. 
-The quality of this prediction however depends on several factors, which we discuss in detail in \ref{implementation}.
+The quality of this prediction however depends on several factors, which we discuss in detail in \cref{implementation}.
 
 \subsection{Visual Recognition of moving elements}
 
 In order to create a state-vector input we have to track the balls on the pool table. 
-Since we needed reproductable results we used stock-footage as well as our own videos and processed them with the Python implementation of openCV.
-These videos \cref{pic:pool-color} are put into an instance of simple video-processing steps to create a black and white mask of the ball contours as displayed in \cref{pic:pool-bw},
+To provide consistent and reproductable results, we used video footage and processed them with the Python implementation of openCV.
+A video example as seen in \cref{pic:pool-color} is put into an instance of simple video-processing steps to create a black and white mask of the ball contours as displayed in \cref{pic:pool-bw},
 where the center of the white pixel cluster is the ball we're looking for.
 
 \begin{figure}[H]
@@ -120,18 +120,21 @@ This type of vision based tracking works reliably for our requirements.
 
 \section{Related Work}
 
-In the following, we discuss some previous work that is related to our work but none of these articles targets the problem in the same manner.
+In the following section, we are going to discuss some previous work that is related to our work but none of these articles targets the problem in the same manner.
 
-Jong-Yun Kim and Tae-Yong Kim \cite{kim} developed a method to provide robust tracking of a soccer ball. Their problem is that the soccer ball might be occluded by the player at any given time
-so an optical tracker could not deliver any results. In this case they used the velocity vector of the player to substitute for the ball presuming that the ball moves in the same direction as the player.
+Jong-Yun Kim and Tae-Yong Kim \cite{kim} developed a method to provide robust tracking of a soccer ball. 
+They provide a solution for the problem for the case that the soccer ball might be occluded by the player at any given time,
+which results in a diminished tracking accuracy. 
+In this case they used the velocity vector of the player to substitute for the ball presuming that the ball moves in the same direction as the player does.
 
 Jia et.al. \cite{jia} conducted research in the trajectory of pool balls, which helped us to decide which kalman model is the most suitable.
 
 Shiuh et.al. \cite{shiuh} provided a good starting point how to create a tracking algorithm for pool balls. They also developed an algorithm to track occluded objects using an adaptive kalman filter.
 In this case they used to threshhold in order to determine wheter the object can still be reliably tracked. If this isn't the case the filter will rely only on predicted values until the object can be tracked reliably again.
 
-Salzmann and Urtasun \cite{salzmann} proposed a more general approach for tracking. They were able to recreate a highly accurate tracking from a noisy picture based on newtons 2nd law and markov models.
-Using different constraints and presumptions they were could physical parameters like friction and trajectories.
+Salzmann and Urtasun \cite{salzmann} proposed a more general approach for tracking. 
+They were able to recreate a highly accurate tracking from a noisy picture based on newtons 2nd law and markov models.
+Using different constraints and presumptions they were even able to extract physical parameters like friction and trajectories.
 
 Mohamed and Schwarz \cite{schwarz} are using partly the same approach as we do to improve the results created by INS/GPS\footnote{Inertial Navigation System / Global Positioning System} Systems.
 However their approach only targets the 'Q' and 'R' parameters of the filter.
@@ -139,7 +142,7 @@ However their approach only targets the 'Q' and 'R' parameters of the filter.
 Sarkka and Nummenmaa \cite{sarkka} created an adaptive kalman implementation which adapts itself to time-varying noise parameters. Since our input data is constant in this regard,
 we decided to simulate for the optimal filter parametrization instead of relying on the filter to adapt itself.
 
-Gabdulkhakova and Kropatsch \cite{kropatsch} use a kalman filter to create a video analysis tool for snooker games. 
+Gabdulkhakova and Kropatsch \cite{kropatsch} use a kalman filter to create a video analysis tool for snooker game broadcasting.
 
 \section{Implementation} \label{implementation}
 In this section we're going to discuss the different implementations and their constraints. The filter implementations in section \cref{dynamic-q} and \cref{smart-filter} are derived from
