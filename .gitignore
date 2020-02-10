@@ -1,6 +1,13 @@
 .ipynb_checkpoints
 __pycache__
 
+# Latex
+*.aux
+*.fls
+*.out
+*.fdb_latexmk
+*.synctex
+
 # User-specific files
 *.rsuser
 *.suo
