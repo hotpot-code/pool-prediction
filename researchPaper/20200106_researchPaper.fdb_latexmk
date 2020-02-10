@@ -1,13 +1,13 @@
 # Fdb version 3
-["bibtex 20200106_researchPaper"] 1581346577 "20200106_researchPaper.aux" "20200106_researchPaper.bbl" "20200106_researchPaper" 1581346579
+["bibtex 20200106_researchPaper"] 1581350429 "20200106_researchPaper.aux" "20200106_researchPaper.bbl" "20200106_researchPaper" 1581350918
   "/usr/local/texlive/2019/texmf-dist/bibtex/bst/base/ieeetr.bst" 1292289607 18361 1a00e58565e7f19bf2b3e1bfb82254ae ""
-  "20200106_researchPaper.aux" 1581346579 9174 a3179e94d77ddd345bbc69bb061a2c59 "pdflatex"
+  "20200106_researchPaper.aux" 1581350918 9174 65b023f3baffb45e484d3f0f6926af2b "pdflatex"
   "references.bib" 1581252065 2459 3604323509039dcf32e3db29b49e1f71 ""
   (generated)
-  "20200106_researchPaper.blg"
   "20200106_researchPaper.bbl"
-["pdflatex"] 1581346578 "20200106_researchPaper.tex" "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.pdf" "20200106_researchPaper" 1581346579
-  "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.aux" 1581346579 9174 a3179e94d77ddd345bbc69bb061a2c59 "pdflatex"
+  "20200106_researchPaper.blg"
+["pdflatex"] 1581350916 "20200106_researchPaper.tex" "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.pdf" "20200106_researchPaper" 1581350918
+  "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.aux" 1581350918 9174 65b023f3baffb45e484d3f0f6926af2b "pdflatex"
   "/usr/local/texlive/2019/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex9.tfm" 1246382020 996 a18840b13b499c08ac2de96a99eda4bc ""
@@ -111,11 +111,11 @@
   "/usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1557342064 3277517 23507ed665b4dd9046f0f2a94bbef2be ""
   "/usr/local/texlive/2019/texmf-var/web2c/pdftex/pdflatex.fmt" 1571575574 4259637 4a86c5a74fb47e6b721287e4933e243c ""
   "/usr/local/texlive/2019/texmf.cnf" 1557341546 577 d150fef99ac436ad1156e86b0892f6ef ""
-  "20200106_researchPaper.aux" 1581346579 9174 a3179e94d77ddd345bbc69bb061a2c59 "pdflatex"
-  "20200106_researchPaper.bbl" 1581346577 1353 c8970a534939e682471930b93bd3d80b "bibtex 20200106_researchPaper"
-  "20200106_researchPaper.out" 1581346578 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "20200106_researchPaper.tex" 1581346575 17678 266764e2521944d6f97dce9d846fa953 ""
-  "images/filter_comparison.PNG" 1581331839 57433 422223426e29a10dba2c8cde4660aea7 ""
+  "20200106_researchPaper.aux" 1581350918 9174 65b023f3baffb45e484d3f0f6926af2b "pdflatex"
+  "20200106_researchPaper.bbl" 1581350429 1353 c8970a534939e682471930b93bd3d80b "bibtex 20200106_researchPaper"
+  "20200106_researchPaper.out" 1581350917 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "20200106_researchPaper.tex" 1581350916 17689 24a034e735861899dc4681b2f1befaed ""
+  "images/filter_comparison_horizontal.PNG" 1581350906 105768 bef8c1f57c9eaeb3cae3b6f62157632d ""
   "images/fps_boxplot.PNG" 1581346382 104137 905784d042751b3e56c276328ec35442 ""
   "images/noise_boxplot.PNG" 1581346371 98412 a8260ea488df833d1eab1b798adcb9aa ""
   "images/pool_color.PNG" 1581331518 920962 0b1e984be9a65beb988bf0da6c30161d ""
@@ -126,10 +126,10 @@
   "images/prediction_error.PNG" 1581345293 70312 57ae65030bdffa92bf6cdf40325a8779 ""
   "images/velocity_boxplot.PNG" 1581346376 108487 887b63a70e05ffbc3307773460ca7145 ""
   (generated)
-  "20200106_researchPaper.aux"
+  "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.pdf"
   "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.aux"
-  "20200106_researchPaper.out"
+  "20200106_researchPaper.aux"
   "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.log"
+  "20200106_researchPaper.out"
   "20200106_researchPaper.pdf"
   "20200106_researchPaper.log"
-  "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.pdf"

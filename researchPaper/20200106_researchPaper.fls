@@ -179,9 +179,9 @@ INPUT /Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/./imag
 INPUT ./images/pool_mask.PNG
 INPUT ./images/pool_mask.PNG
 INPUT /usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map
-INPUT /Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/./images/filter_comparison.PNG
-INPUT ./images/filter_comparison.PNG
-INPUT ./images/filter_comparison.PNG
+INPUT /Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/./images/filter_comparison_horizontal.PNG
+INPUT ./images/filter_comparison_horizontal.PNG
+INPUT ./images/filter_comparison_horizontal.PNG
 INPUT /Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/./images/prediction_dyn_smart_time.PNG
 INPUT ./images/prediction_dyn_smart_time.PNG
 INPUT ./images/prediction_dyn_smart_time.PNG
