@@ -1,13 +1,13 @@
 # Fdb version 3
-["bibtex 20200106_researchPaper"] 1581331384 "20200106_researchPaper.aux" "20200106_researchPaper.bbl" "20200106_researchPaper" 1581332267
+["bibtex 20200106_researchPaper"] 1581331384 "20200106_researchPaper.aux" "20200106_researchPaper.bbl" "20200106_researchPaper" 1581337176
   "/usr/local/texlive/2019/texmf-dist/bibtex/bst/base/ieeetr.bst" 1292289607 18361 1a00e58565e7f19bf2b3e1bfb82254ae ""
-  "20200106_researchPaper.aux" 1581332267 11198 3d28545795a2c697b758bdefc28d3ea7 "pdflatex"
+  "20200106_researchPaper.aux" 1581337176 11198 3d28545795a2c697b758bdefc28d3ea7 "pdflatex"
   "references.bib" 1581252065 2459 3604323509039dcf32e3db29b49e1f71 ""
   (generated)
-  "20200106_researchPaper.blg"
   "20200106_researchPaper.bbl"
-["pdflatex"] 1581332266 "20200106_researchPaper.tex" "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.pdf" "20200106_researchPaper" 1581332267
-  "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.aux" 1581332267 11198 3d28545795a2c697b758bdefc28d3ea7 "pdflatex"
+  "20200106_researchPaper.blg"
+["pdflatex"] 1581337175 "20200106_researchPaper.tex" "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.pdf" "20200106_researchPaper" 1581337176
+  "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.aux" 1581337176 11198 3d28545795a2c697b758bdefc28d3ea7 "pdflatex"
   "/usr/local/texlive/2019/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex9.tfm" 1246382020 996 a18840b13b499c08ac2de96a99eda4bc ""
@@ -111,20 +111,21 @@
   "/usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1557342064 3277517 23507ed665b4dd9046f0f2a94bbef2be ""
   "/usr/local/texlive/2019/texmf-var/web2c/pdftex/pdflatex.fmt" 1571575574 4259637 4a86c5a74fb47e6b721287e4933e243c ""
   "/usr/local/texlive/2019/texmf.cnf" 1557341546 577 d150fef99ac436ad1156e86b0892f6ef ""
-  "20200106_researchPaper.aux" 1581332267 11198 3d28545795a2c697b758bdefc28d3ea7 "pdflatex"
+  "20200106_researchPaper.aux" 1581337176 11198 3d28545795a2c697b758bdefc28d3ea7 "pdflatex"
   "20200106_researchPaper.bbl" 1581331385 1353 c8970a534939e682471930b93bd3d80b "bibtex 20200106_researchPaper"
-  "20200106_researchPaper.out" 1581332266 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "20200106_researchPaper.tex" 1581332266 18747 f58ff57456df67cf861d9a2ac70acc83 ""
+  "20200106_researchPaper.out" 1581337175 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "20200106_researchPaper.tex" 1581337174 18761 36fdd216f8bd166f2e174702a0414bee ""
   "images/filter_comparison.PNG" 1581331839 57433 422223426e29a10dba2c8cde4660aea7 ""
   "images/placeholder.PNG" 1581252065 58428 bcceaeabbe1438d8c9039fbfc1c747ae ""
   "images/pool_color.PNG" 1581331518 920962 0b1e984be9a65beb988bf0da6c30161d ""
   "images/pool_mask.PNG" 1581331518 20513 255f9ef04ee4f0f9db8676f8b9bf6290 ""
   "images/pool_real.PNG" 1581332234 956649 0ddf5b1eca11e04a21103617901ba87a ""
+  "images/prediction_dyn_smart_time.PNG" 1581337167 229633 8ede66a8a9f24acb926247fd02fcdd07 ""
   (generated)
-  "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.aux"
-  "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.log"
-  "20200106_researchPaper.out"
-  "20200106_researchPaper.aux"
   "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.pdf"
   "20200106_researchPaper.log"
+  "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.aux"
   "20200106_researchPaper.pdf"
+  "20200106_researchPaper.out"
+  "20200106_researchPaper.aux"
+  "/Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/20200106_researchPaper.log"

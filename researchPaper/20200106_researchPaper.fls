@@ -182,10 +182,11 @@ INPUT /usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map
 INPUT /Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/./images/filter_comparison.PNG
 INPUT ./images/filter_comparison.PNG
 INPUT ./images/filter_comparison.PNG
+INPUT /Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/./images/prediction_dyn_smart_time.PNG
+INPUT ./images/prediction_dyn_smart_time.PNG
+INPUT ./images/prediction_dyn_smart_time.PNG
 INPUT /Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/./images/placeholder.PNG
 INPUT ./images/placeholder.PNG
-INPUT ./images/placeholder.PNG
-INPUT /Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/./images/placeholder.PNG
 INPUT ./images/placeholder.PNG
 INPUT /Volumes/X5/Master/Physical_Computing/pool-prediction/researchPaper/./images/placeholder.PNG
 INPUT ./images/placeholder.PNG
