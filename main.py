@@ -1,7 +1,4 @@
-# import the necessary packages
-from collections import deque
 import numpy as np
-import copy 
 import cv2
 import math
 import matplotlib.pyplot as plt
