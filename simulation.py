@@ -354,6 +354,7 @@ def show_prediction_boxplot(simulations, filter=0, pre_nos=(15, 30, 60)):
 
 if __name__ == "__main__":
 
+    ## create simulation files
     # testing_noise = [2.0, 5.0, 10.0]
     # testing_start_velocity = [700, 500, 300]
     # testing_fps = [60, 30, 10]
@@ -376,8 +377,8 @@ if __name__ == "__main__":
     smart_dyn_cvm = Smart_CVM_Filter(1.0 / 60, 350, 2.0, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(100, 1820, 100, 980).setRadius(25)
     cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 350, 2.0, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
 
-    filters = [normal_cvm, normal_cam, cvm_dynamic, cam_dynamic, smart_cvm, cam_smart]
-    sim.run(filters, show_video=False, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_500_60.csv")
+    filters = [normal_cvm, cvm_dynamic, smart_cvm]
+    sim.run(filters, show_video=True, show_prediction=2, save_prediction=True, file="simulations/sim_2.0_500_60.csv")
     #sim.show_mse_velocity_comparison_plot()
     sim.show_mse_comparison_plot(pre_no=30)
     #sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
