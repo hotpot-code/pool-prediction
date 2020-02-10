@@ -262,23 +262,9 @@ The first simulation altered the sampling-rate. In a real-world scenarion this w
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
+    \fbox{\includegraphics[width=0.47\textwidth]{fps_boxplot.PNG}}
     \caption{Impact of framerates on prediction accuracy}
     \label{fig:framerate10}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
-    \caption{Impact of framerates on prediction accuracy}
-    \label{fig:framerate30}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
-    \caption{Impact of framerates on prediction accuracy}
-    \label{fig:framerate60}
 \end{figure}
 
 The sample rate has a certain impact on the quality of the prediction. However the the difference between 30 and 60 frames is not as big as between 10 and 30. 
@@ -291,23 +277,9 @@ The second simulation altered the amount of noise on the measurement and how the
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
-    \caption{Impact of framerates on prediction accuracy}
+    \fbox{\includegraphics[width=0.47\textwidth]{noise_boxplot.PNG}}
+    \caption{Impact of sensor noise on prediction accuracy}
     \label{fig:noise2}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
-    \caption{Impact of framerates on prediction accuracy}
-    \label{fig:noise5}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
-    \caption{Impact of framerates on prediction accuracy}
-    \label{fig:noise10}
 \end{figure}
 
 Although the amount of noise increased fivefold, the median stays almost constant compared to less noisy samples. The min and max values of deviation however change greatly on magnitude.
@@ -319,23 +291,9 @@ Lastly we tested the impact of different starting velocities, which has an influ
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
-    \caption{Impact of framerates on prediction accuracy}
+    \fbox{\includegraphics[width=0.47\textwidth]{velocity_boxplot.PNG}}
+    \caption{Impact of start velocities on prediction accuracy}
     \label{fig:velocity300}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
-    \caption{Impact of framerates on prediction accuracy}
-    \label{fig:velocity500}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{placeholder.PNG}}
-    \caption{Impact of framerates on prediction accuracy}
-    \label{fig:velocity700}
 \end{figure}
 
 We can see here that the starting velocity has barely any effect. 
