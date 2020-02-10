@@ -275,22 +275,25 @@ class Simulation():
 
         plt.show()
 
-    def show_prediction_plot(self, filter=0, pre_nos=(15, 30, 60)):
+    def show_prediction_plot(self, filters=(0), pre_nos=(15, 30, 60), show_bank=False):
         
-        for pre_no in pre_nos:
-            residuals = self.get_prediction_residuals(filter, pre_no)
-            x = np.arange(0, len(residuals)) + pre_no
-            plt.plot(x, residuals, label='Prediction %d frames ago' % pre_no)
+        for filter_no in filters:
+            for pre_no in pre_nos:
+                residuals = self.get_prediction_residuals(filter_no, pre_no)
+                x = np.arange(0, len(residuals)) + pre_no
+                plt.plot(x, residuals, label='Prediction %d frames ago (%s)' % (pre_no, self.names[filter_no]))
 
         #plt.boxplot([prediction_15_residuals, prediction_30_residuals, prediction_60_residuals], showfliers=False)
 
-        for i in range(0, len(self.bank_time_span)):
-            plt.axvspan(self.bank_time_span[i][0], self.bank_time_span[i][1], color='red', alpha=0.1)
+        if show_bank:
+            for i in range(0, len(self.bank_time_span)):
+                plt.axvspan(self.bank_time_span[i][0], self.bank_time_span[i][1], color='red', alpha=0.1)
 
-        plt.xticks(x, [*self.names, "no Filter"])
+        #plt.xticks(x, [*self.names, "no Filter"])
+        plt.xlabel('frame number')
         plt.ylabel('distance to ground truth')
 
-        plt.ylim(top=650)
+        #plt.ylim(top=650)
         plt.title("Predictions")
         plt.legend()
         plt.show()
@@ -337,8 +340,9 @@ if __name__ == "__main__":
     smart_dyn_cvm = Smart_CVM_Filter(1.0 / 60, 350, 2.0, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(100, 1820, 100, 980).setRadius(25)
     cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 350, 2.0, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
 
-    filters = [smart_cvm, cam_smart]
-    sim.run(filters, show_video=True, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_700_60.csv")
+    filters = [normal_cvm, cvm_dynamic, smart_cvm]
+    sim.run(filters, show_video=False, show_prediction=0, save_prediction=True, file="simulations/sim_2.0_500_60.csv")
     #sim.show_mse_velocity_comparison_plot()
     #sim.show_mse_comparison_plot(pre_no=30)
     #sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
+    sim.show_prediction_plot(filters=(1, 2), pre_nos=[30], show_bank=True)
