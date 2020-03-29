@@ -60,7 +60,7 @@
     The problem is, when two balls hit each other or a cushion the velocity vector changes its orientation instantly. 
     If this isn't taken into account, the filter needs some time to adapt to the new direction of movement and will produce wrong estimations during this time.
 
-    This behavior is independent of the type of kalman implementation being CVM or CAM.
+    This behavior is independent of the type of kalman implementation being constant-velocity-model or constant-acceleration-model.
     A kalman filter will assume the direction of movement on any given sample is about the same as in the last sample. 
     It will therefore create wrong estimations if the direction of movement changes drastically in a short period of time. The time the filter needs to recover depends on the filter gain.
 
