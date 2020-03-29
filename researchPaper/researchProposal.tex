@@ -50,6 +50,7 @@
 
 
 \begin{multicols}{2}
+
     \section{Introduction}
     At first glance the game of pool is very suitable to examine the behavior of a kalman-filter enhanced tracking system based on pure visual tracking. 
     The surface of a pool table is made of a thin fabric which covers a hard surface i.e. slate or granite.
@@ -66,13 +67,41 @@
     The quality of this prediction however depends on several factors, i.e. the applied process noise and framerate of the video.
 
     \section{Problem and Motivation}
-    
+    As introduced in the previous section is the lack of adaptability in a vanilla Kalman implementation.
+    One could argue that this can be taken into account by using a higher overall process noise which would in turn lead to significantly reduced overall quality.
+    This gets worse with increased speed and lower framerate. Essentially rendering the filter useless at a certain point.
+
+    We think this is a good point to develop this algorithm for future application in VR and AR based pool trainers and augmented broadcast experiences.
 
     \section{Hypothesis and Goals}
 
     \section{State of research}
 
+    Jong-Yun Kim and Tae-Yong Kim \cite{kim} developed a method to provide robust tracking of a soccer ball. 
+    They provide a solution for the problem for the case that the soccer ball might be occluded by the player at any given time,
+    which results in a diminished tracking accuracy. 
+    In this case they used the velocity vector of the player to substitute for the ball presuming that the ball moves in the same direction as the player does.
+
+    Jia et.al. \cite{jia} conducted research in the trajectory of pool balls, which helped us to decide which kalman model is the most suitable.
+
+    Shiuh et.al. \cite{shiuh} provided a good starting point how to create a tracking algorithm for pool balls. They also developed an algorithm to track occluded objects using an adaptive kalman filter.
+    In this case they used to threshold in order to determine whether the object can still be reliably tracked. If this isn't the case the filter will rely only on predicted values until the object can be tracked reliably again.
+
+    Salzmann and Urtasun \cite{salzmann} proposed a more general approach for tracking. 
+    They were able to recreate a highly accurate tracking from a noisy picture based on newtons 2nd law and markov models.
+    Using different constraints and presumptions they were even able to extract physical parameters like friction and trajectories.
+
+    Mohamed and Schwarz \cite{schwarz} are using partly the same approach as we do to improve the results created by INS/GPS\footnote{Inertial Navigation System / Global Positioning System} Systems.
+    However their approach only targets the 'Q' and 'R' parameters of the filter.
+
+    Sarkka and Nummenmaa \cite{sarkka} created an adaptive kalman implementation which adapts itself to time-varying noise parameters. Since our input data is constant in this regard,
+    we decided to simulate for the optimal filter parametrization instead of relying on the filter to adapt itself.
+
+    Gabdulkhakova and Kropatsch \cite{kropatsch} use a kalman filter to create a video analysis tool for snooker game broadcasting.
+
     \section{Methods of research}
+
+    We are going to use two stepped approach: develop and evaluate the algorithm in a tailor made simulation 
 
     \section{Proposed timetable}
 
