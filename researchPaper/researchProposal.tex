@@ -36,7 +36,7 @@
 \title{Kalman-filter for partial linear systems for tracking pool balls}
 \author{Marlon Lückert \\ Bachelor of Science \\ \href{mailto:marlon.lueckert@haw-hamburg.de}{marlon.lueckert@haw-hamburg.de} 
    \and Julius Neudecker \\ Bachelor of Science \\ \href{mailto:julius.neudecker@haw-hamburg.de}{julius.neudecker@haw-hamburg.de} }
-\date{März 2020}
+\date{March 2020}
 \maketitle
 
 \tableofcontents
@@ -45,7 +45,7 @@
     In this proposal we are going to discuss an advanced implementation of the Kalman-filter \cite{kalman} to improve measurement quality and predict the movement of balls on a pool table. 
     We are going to point out the necessity of an advanced filter design in this particular case. The Problem we are going to solve is the following:
     Since the performance of the filter deteriorates in cases of a rapid change in direction, the filter has to be able to adapt more quickly to these rapid changes.
-    Our plan is to derive two different implementations with adaptive behavior. The implementations will be tested in a simulator and with real world video footage of a pool table.
+    Our plan is to derive an implementations with adaptive behavior. The implementation will be tested in a simulator and with real world video footage of a pool table.
     The goal is to provide a filter design with a significant lower MSE than a vanilla implementation.
 \end{abstract}
 
@@ -111,8 +111,28 @@
     \footnote{Mean Square Error} between the ground truth and filtered position and the quality of prediction
     with +n frames respectively.
 
+    We are going to use a two-stepped approach: 
+    
+    Firstly we will optimize the process noise behaviour in edge cases. 
+    Meaning that at points where the ball is at risk of a sudden change in direction, the filter adapts itself by temporarily altering its process noise parameter.
+    Thus being less prone to overshooting the critical point.
+    We are planning to use a gradient descent algorithm in order to optimize the filter behavior in all states.
+
+    Secondly since a rapid change in direction is not a linear problem in terms of implementation of a kalman filter, we are plannning on using linear algebra to reduce this problem 
+    to a linear vector multiplication. By doing so we will achieve not only a sudden but also precise change without utilizing the time invariant input capabilities of the filter.
 
     \section{Proposed timetable}
+
+    To conduct our research in a timely manner, we propose the following schedule to have the finished research paper by the end on June 2020.
+
+    \begin{itemize}
+        \item until 20th April: develop the mathematical framework
+        \item until 15th May: develop the simulation and create footage for evaluation
+        \item until 31st May: implement the filter according to optimized parameters
+        \item until 30th June: conclude results and write research paper
+    \end{itemize}
+
+    We are planning to submit this paper to a conference which has relevance in this particular field of research. This has yet to be determined.
 
 \end{multicols} 
 
