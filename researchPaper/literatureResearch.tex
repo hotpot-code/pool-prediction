@@ -166,9 +166,9 @@ Since our optimized filter will highly rely on vector and matrix operations, the
 writing special code like this, we have to make us familiar with the basics of such coding.
 
 For paralelization through parallel hardware we could use openCL. An comprehensive introduction is provided by \citep{trevett2013opencl} and \citep{tompson2012introduction}.
+Depending on the hardware we also might go with a proprietary GPGPU framework such as CUDA. In case we should decide to use this \citep{nickolls2008scalable} is an introduction into this topic.
 
 An introduction in compiletime optimization is provided by \citep{hohenauer2006retargetable} and introduction on how to use the new AVX instruction on Intel Processors is given by \citep{cornea2015intel}.
-
 
 \subsection{openCV best practices}
 
@@ -183,11 +183,15 @@ The thesis \citep{schmidt2016measuring} focuses on performance optimization for 
 
 \subsection{Measure and comparison of quantifiable data}
 
+Because error analysis is the driving factor behind our research since we want to minimize the error which is produced by an inferior filter-design, we have to make ourselves familiar with
+state of the art error analysis and the uncertainties of measurement with \citep{taylor1997introduction}. 
+
+\citep{allen1971mean} provides a good explanation why in predictions it is better to use the MSE instead of the LSE.
+
 The standard method to visualize the mean square error of Kalman-filters are 2D plots,
 which can be seen in \citep{8993001} and \citep{1165091}. The y-axis describes the MSE and x-axis the observed parameter. 
 
 \bibliography{literature} 
 \bibliographystyle{abbrvnat}
-
 
 \end{document}
