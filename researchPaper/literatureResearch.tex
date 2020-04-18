@@ -1,0 +1,68 @@
+\documentclass[titlepage, a4paper, 11pt]{scrartcl}
+
+%too much whitespace otherwise
+\usepackage[left=30mm,top=26mm,right=26mm,bottom=15mm]{geometry}
+
+% deutsche Übersetzungen
+%\usepackage[ngerman]{babel}
+% Grafik Pakete
+\usepackage{graphicx,hyperref,amssymb}
+% Ordner für Grafiken
+\graphicspath{ {./images/} }
+% Pakete für Formatierung der Grafiken
+\usepackage{wrapfig}
+\usepackage{float}
+% deutsches Encoding (Umlaute)
+\usepackage[utf8]{inputenc}
+% für Grad Symbol
+\usepackage{textcomp}
+
+% Header and Footer
+\usepackage{fancyhdr}
+
+%image grid
+\usepackage{graphicx}
+\usepackage{subfig}
+
+\usepackage{multicol}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Lückert, Neudecker}
+\lhead{Kalman-filter development - literature research}
+ 
+\begin{document}
+
+\section{Research Goal}
+
+some lorem text
+
+\section{Source of Information}
+
+some lorem text
+
+\section{Criteria for eligible sources}
+
+some lorem text
+
+\section{Sources for our research}
+
+\subsection{Topic A}
+
+happy little lorem
+
+\subsection{Topic B}
+
+happy little lorem
+
+\subsection{Aonther Lorem Topic}
+
+happy little lorem
+
+By the way...somehwere around here are the references to the literature.bib file.
+
+\bibliography{literature} 
+\bibliographystyle{ieeetr}
+
+
+\end{document}
