@@ -26,6 +26,10 @@
 
 \usepackage{multicol}
 
+%harvard cite style - use this: \citep{key}
+\usepackage{natbib}
+\setcitestyle{authoryear,open={(},close={)}}
+
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{Lückert, Neudecker}
@@ -50,6 +54,9 @@ altering different parameters in particular and develop a deeper understanding o
 
 Since there exist a huge number of different numerical and analytical ways to solve a gradient descent problem it will save time to evaluate the best
 suitable algorithm prior to implementation to avoid unnecessary work.
+
+\textit{This is only for testing the citation format and will be removed later:}
+Gradient descent overview \citep{ruder2016overview} is very useful.
 
 \paragraph{Efficient implementation of algorithms}
 
@@ -92,7 +99,7 @@ happy little lorem
 By the way...somehwere around here are the references to the literature.bib file.
 
 \bibliography{literature} 
-\bibliographystyle{ieeetr}
+\bibliographystyle{abbrvnat}
 
 
 \end{document}
