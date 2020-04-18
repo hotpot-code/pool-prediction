@@ -134,9 +134,15 @@ some advanced techniques from this book. This might prove especially useful beca
 
 \subsection{Efficient implementation  of  algorithms}
 
-There exist a few different approaches to optimize an algorithm for fast execution. These are in particular paralelization, code optimization and compiletime optimization.
+There exist a few different approaches to optimize an algorithm for fast execution. These are in particular paralelization and compiletime optimization.
 
-Since our optimized filter will highly rely on vector and matrix operations,
+Since our optimized filter will highly rely on vector and matrix operations, there is a big potencial for all these optimizations. However since we lack experience in
+writing special code like this, we have to make us familiar with the basics of such coding.
+
+For paralelization through parallel hardware we could use openCL. An comprehensive introduction is provided by \citep{trevett2013opencl} and \citep{tompson2012introduction}.
+
+An introduction in compiletime optimization is provided by \citep{hohenauer2006retargetable} and introduction on how to use the new AVX instruction on Intel Processors is given by \citep{cornea2015intel}.
+
 
 \subsection{openCV best practices}
 
