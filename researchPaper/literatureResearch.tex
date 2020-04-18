@@ -37,9 +37,11 @@
  
 \begin{document}
 
-\section{Research Goal}
+\section{Research Goals}
 
-Our primary goal with the literature research is to find sources of information which complements our expertise. 
+Primarily we are looking for related work in the field of kalman filtering in billiards, to inform ourselves about the current progress of research and state-of-the-art solutions.
+
+Secondly our goal with the literature research is to find sources of information which complements our expertise. 
 
 While writing our proposal we identified five aspects where we lack sufficient expertise.
 These are in particular:
@@ -58,7 +60,7 @@ suitable algorithm prior to implementation to avoid unnecessary work.
 \paragraph{Efficient implementation of algorithms}
 
 This is especially important since our algorithm is supposed to work in realtime.
-Therefore any delay induced by unefficient code is unacceptable.
+Therefore any delay induced by inefficient code is unacceptable.
 
 \paragraph{openCV best practices}
 
@@ -73,7 +75,7 @@ evaluate different methods of putting numbers in context to one another and whic
 
 \section{Source of Information}
 
-For the research regarding \textit{efficient implementation of algorithms and openCV best practices} it is the best option to look for recent papers since these topics are currently
+For the research regarding \textit{state-of-the-art solutions} and \textit{efficient implementation of algorithms and openCV best practices} it is the best option to look for recent papers since these topics are currently
 subjects where a certain number of people are working on. Therefore the following archives offer a good starting point to search for up-to-date papers:
 
 \begin{enumerate}
@@ -114,6 +116,30 @@ Another important aspect is especially the case with non-scientific online resso
 version of the ressource to prevent confusion in case the ressources changes.
 
 \section{Sources for our research}
+
+\subsection{Related Work}
+
+Jong-Yun Kim and Tae-Yong Kim \cite{kim} developed a method to provide robust tracking of a soccer ball. 
+They provide a solution for the problem for the case that the soccer ball might be occluded by the player at any given time,
+which results in a diminished tracking accuracy. 
+In this case they used the velocity vector of the player to substitute for the ball presuming that the ball moves in the same direction as the player does.
+
+Jia et.al. \cite{jia} conducted research in the trajectory of pool balls, which helped us to decide which kalman model is the most suitable.
+
+Shiuh et.al. \cite{shiuh} provided a good starting point how to create a tracking algorithm for pool balls. They also developed an algorithm to track occluded objects using an adaptive kalman filter.
+In this case they used to threshold in order to determine whether the object can still be reliably tracked. If this isn't the case the filter will rely only on predicted values until the object can be tracked reliably again.
+
+Salzmann and Urtasun \cite{salzmann} proposed a more general approach for tracking. 
+They were able to recreate a highly accurate tracking from a noisy picture based on newtons 2nd law and markov models.
+Using different constraints and presumptions they were even able to extract physical parameters like friction and trajectories.
+
+Mohamed and Schwarz \cite{schwarz} are using partly the same approach as we do to improve the results created by INS/GPS\footnote{Inertial Navigation System / Global Positioning System} Systems.
+However their approach only targets the 'Q' and 'R' parameters of the filter.
+
+Sarkka and Nummenmaa \cite{sarkka} created an adaptive kalman implementation which adapts itself to time-varying noise parameters. Since our input data is constant in this regard,
+we decided to simulate for the optimal filter parametrization instead of relying on the filter to adapt itself.
+
+Gabdulkhakova and Kropatsch \cite{kropatsch} use a kalman filter to create a video analysis tool for snooker game broadcasting.
 
 \subsection{Design of experiments}
 
