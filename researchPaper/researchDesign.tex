@@ -1,0 +1,46 @@
+\documentclass[titlepage, a4paper, 11pt]{scrartcl}
+
+%too much whitespace otherwise
+\usepackage[left=30mm,top=26mm,right=26mm,bottom=15mm]{geometry}
+
+% deutsche Übersetzungen
+%\usepackage[ngerman]{babel}
+% Grafik Pakete
+\usepackage{graphicx,hyperref,amssymb}
+% Ordner für Grafiken
+\graphicspath{ {./images/} }
+% Pakete für Formatierung der Grafiken
+\usepackage{wrapfig}
+\usepackage{float}
+% deutsches Encoding (Umlaute)
+\usepackage[utf8]{inputenc}
+% für Grad Symbol
+\usepackage{textcomp}
+
+% Header and Footer
+\usepackage{fancyhdr}
+
+%image grid
+\usepackage{graphicx}
+\usepackage{subfig}
+
+\usepackage{multicol}
+
+%harvard cite style - use this: \citep{key}
+\usepackage{natbib}
+\setcitestyle{authoryear,open={(},close={)}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Lückert, Neudecker}
+\lhead{Kalman-filter development - research design}
+ 
+\begin{document}
+
+\section{Research Design}
+
+
+\bibliography{researchDesign} 
+\bibliographystyle{abbrvnat}
+
+\end{document}
