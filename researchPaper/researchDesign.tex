@@ -72,15 +72,27 @@ The smaller the mse of our Kalman-Filter compared to the standard implementation
 
 \section{Data Acquisition}
 
-- experiments
-- simulation
-- real videos
+We are going to acquire our data from billiard simulations and real videos.
 
-\section{Examination Units}
+\subsection{Simulation}
 
-- framerate
-- ball speed
-- sensor noise
+We construct a simulation to fully control every parameter and the state of the billiard game.
+This helps us to accomplish a better conclusion to the performance in real video.
+Our examination units are the framerate, the ball velocity, the sensor noise.
+
+\paragraph{Framerate}
+
+The framerate describes the framerate of the video, which is equal to the sampling rate of the Kalman-Filter.
+A standard Kalman-Filter performs much worse on low framerate because it gets less data to process.
+We test different framerate to inspect the performance of our implementation for different environments.
+For realtime applications on mobile devices our implementation has to perform well on low framerates.
+We are going to test the standard framerates 30 and 60 FPS and a very low framerate at 10 FPS.
+
+\paragraph{Ball Velocity}
+
+The ball velocity describes the speed of the ball, which depends on how hard the player hits the ball.
+The velocity is measured in pixel per frame.
+The get better analyze edge cases..
 
 \section{Data Evaluation}
 
