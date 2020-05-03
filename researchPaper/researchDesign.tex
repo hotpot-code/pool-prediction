@@ -37,9 +37,37 @@
  
 \begin{document}
 
+\section{Hypothesis}
+
+The tracking and prediction of billiard balls by a Kalman-Filter improves by explicitly taking the physical conditions of a billiards table into account when implementing the filter.
+
 \section{Operationalization}
+
+In the following section we are going to operationalize the different terms in our hypthesis.
+
+\subsection{Tracking}
+
+The tracking describes the deviation from the filtered position of the billiard ball (result of Kalman-Filter) to the real position of the billiard ball.
+The position divides into three dimensions, the x-coordinate, the y-coordinate, the z-coordinate.
+Since we are investigating a billiard game we disregard the up-direction (z-coordinate), because the ball moves on a flat surface and will not leave the plane.
+We are measuring the coordinates in pixels. The range of the pixels is defined by the resolution of the input video on which the Kalman-Filter gets applied to.
+The origin, coordinate (0,0), is always the top-left corner.
+The final deviation from the two position is calculated with the Euclidean distance, which results in a length in pixels.
+
+\subsection{Prediction}
+
+The prediction describes the deviation from the calculated future position of the billiard ball to the real position at this specific time.
+The positions use the same measurements as described in the previous chapter.
+The time is measured in frames. The specific number of frames we will look in the future will vary in our experiments.
+To make the frame count comparable with different input video source we align them with the framerate (frames per second) of the video.
+
+\subsection{Improvement}
+
+
 \section{Data Acquisition}
+
 \section{Examination Units}
+
 \section{Data Evaluation}
 
 
