@@ -54,6 +54,9 @@ We are measuring the coordinates in pixels. The range of the pixels is defined b
 The origin, coordinate (0,0), is always the top-left corner.
 The final deviation from the two position is calculated with the Euclidean distance, which results in a length in pixels.
 
+The position of the billiard ball changes over time, because we are investigating video sources.
+To measure the deviation of the whole video and to get a key figure, we are calculating the mean square error (mse) in which the error is the pixel distance between the two positions. 
+
 \subsection{Prediction}
 
 The prediction describes the deviation from the calculated future position of the billiard ball to the real position at this specific time.
@@ -63,6 +66,9 @@ To make the frame count comparable with different input video source we align th
 
 \subsection{Improvement}
 
+The improvement compares a standard Kalman-Filter to our implementation of the Kalman-Filter.
+The improvement is measured as the difference between the different mean square errors of the tracking and the prediction.
+The smaller the mse of our Kalman-Filter compared to the standard implementation the greater the improvement.
 
 \section{Data Acquisition}
 
