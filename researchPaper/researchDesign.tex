@@ -92,11 +92,31 @@ We are going to test the standard framerates 30 and 60 FPS and a very low framer
 
 The ball velocity describes the speed of the ball, which depends on how hard the player hits the ball.
 The velocity is measured in pixel per frame.
-The get better analyze edge cases..
+The cover a lot of cases, we choose a low velocity of 300 pixel per frame, an average velocity of 500 pixel per frame and a high velocity of 700 pixel per frame.
+We have to keep in mind that a high velocity also leads to more collisions because the ball will move a longer distance.
+
+\paragraph{Sensor Noise}
+
+When we analyze realtime videos we have detect the balls in the video frame.
+The detection is not always perfect and heavily relies on the light conditions and resolution of the camera.
+To simulate the quality of detection we added a noise value which changes the detected ball position by random value in a certain range.
+We test a deviation of 15 pixel, 30 pixel and 60 pixel to inspect how well the Kalman-Filter will perform.
+
+\paragraph{Change of parameters}
+
+To test the parameters individually we only change one parameter at the time.
+Three variations on each parameter lead to 9 simulation environments in total.
+
+\subsection{Real Videos}
+
+After testing the filter in the simulation we are also doing some test on random billiard videos.
+Since we are relying on a ball detection algorithm to identify the billiard balls, we cannot obtain the real position of the ball like we could in the simulation.
+That's why we cannot make statements about the tracking quality, but we can evaluate the performance of the tracking.
 
 \section{Data Evaluation}
 
-- mse
+The key figure of evaluation is the mean square error.
+If the means square error of our implementation is lower compared to the standard implementation in every experiment we can prove that our implementation improved the tracking and prediction of billiard balls.
 
 \bibliography{researchDesign} 
 \bibliographystyle{abbrvnat}
