@@ -70,17 +70,17 @@ The improvement compares a standard Kalman-Filter to our implementation of the K
 The improvement is measured as the difference between the different mean square errors of the tracking and the prediction.
 The smaller the mse of our Kalman-Filter compared to the standard implementation the greater the improvement.
 
-\section{Data Acquisition}
+\section{Data Acquisition} \label{data}
 
 We are going to acquire our data from billiard simulations and real videos.
 
-\subsection{Simulation}
+\subsection{Simulation} \label{sim}
 
 We construct a simulation to fully control every parameter and the state of the billiard game.
 This helps us to accomplish a better conclusion to the performance in real video.
 Our examination units are the framerate, the ball velocity, the sensor noise.
 
-\paragraph{Framerate}
+\paragraph{Framerate} \label{fps}
 
 The framerate describes the framerate of the video, which is equal to the sampling rate of the Kalman-Filter.
 A standard Kalman-Filter performs much worse on low framerate because it gets less data to process.
@@ -102,23 +102,71 @@ The detection is not always perfect and heavily relies on the light conditions a
 To simulate the quality of detection we added a noise value which changes the detected ball position by random value in a certain range.
 We test a deviation of 15 pixel, 30 pixel and 60 pixel to inspect how well the Kalman-Filter will perform.
 
-\paragraph{Change of parameters}
+\paragraph{Change of parameters} \label{cng}
 
 To test the parameters individually we only change one parameter at the time.
 Three variations on each parameter lead to 9 simulation environments in total.
 
-\subsection{Real Videos}
+\subsection{Real Videos} \label{vid}
 
 After testing the filter in the simulation we are also doing some test on random billiard videos.
 Since we are relying on a ball detection algorithm to identify the billiard balls, we cannot obtain the real position of the ball like we could in the simulation.
 That's why we cannot make statements about the tracking quality, but we can evaluate the performance of the tracking.
+
+\section{Data samples}
+
+For the data sampling we must take into account our two approaches in \ref{sim} and \ref{vid}.
+
+\paragraph{Simluation}
+
+Since the simulation is not very computational intensive we are able to select any sample size and resolution in terms of delta time.
+This is especially useful in edge cases as we already outlined in our research proposal.
+However in regard to our evaluation with real world footage we also consider a less dense temporal resolition to match with these.
+The way we are doing this in our research is outlined in \ref{cng}.
+
+\paragraph{Real Videos}
+
+Since the real videos have a fixed framerate, our data sampling relies on the temporal resolution of the cameras - see \ref{fps}.
+Every videoframe represents one data sample in this regard. We can derive all the necessary parameters outlined in \ref{data} off these.
+
 
 \section{Data Evaluation}
 
 The key figure of evaluation is the mean square error.
 If the means square error of our implementation is lower compared to the standard implementation in every experiment we can prove that our implementation improved the tracking and prediction of billiard balls.
 
-\bibliography{researchDesign} 
-\bibliographystyle{abbrvnat}
+\subsection{optimizing}
+
+Since we can create a big dataset with our simulation, we're able to optimize certain parameters in our filter design.
+There two approaches to solve this optimization problem. 
+
+\begin{enumerate}
+    \item Iteration
+    \item Modeling
+\end{enumerate}
+
+\paragraph{Iteration}
+
+We simply iterate over all parameters of our simulation which have an effect on the outcome of the filter quality.
+This approach might take a long time to simulate considering every iteration of one parameter is a nested loop.
+This will result in an $O^{n}$ runtime behavior, where $n$ denotes the number of parameters involved. 
+This is very undesireable, since runtime grows very rapidly.
+
+\paragraph{Modeling}
+
+This approach is more complex to implement but more effective for a big sample size. It works as follows:
+
+\begin{enumerate}
+    \item Create a sparse dataset by iterating over a few hundred parameter variations
+    \item Use a regression algorithm to fit a model to our filter behavior
+    \item Use this model to find the optimal konfiguration by stochastic gradient descent
+\end{enumerate}
+
+Which regression algorithm is yet to be determined, since we have to do further research to evaluate
+the complexity of our behavior. However we aim to use a regularized least squares approach to get the sparsest solution possible.
+This will further enhance the quality and effieciency of our model.
+
+%\bibliography{researchDesign} 
+%\bibliographystyle{abbrvnat}
 
 \end{document}
