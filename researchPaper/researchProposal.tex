@@ -74,11 +74,9 @@
 
     We think this is a good point to develop this algorithm for future application in VR and AR based pool trainers and augmented broadcast experiences.
 
-    \section{Hypothesis and Goals}
+    \section{Hypothesis}
 
-    We can improve the algorithm in the Kalman-Filter by taking the environment into account.
-    If we feed the algorithm with the position of objects which could cause a collision,
-    the filter can dynamically react to those sudden changes in the direction of movement.
+    The tracking and prediction of billiard balls by a Kalman-Filter improves by explicitly taking the physical conditions of a billiards table into account when implementing the filter.
 
     \section{State of research}
 
@@ -104,22 +102,85 @@
 
     Gabdulkhakova and Kropatsch \cite{kropatsch} use a kalman filter to create a video analysis tool for snooker game broadcasting.
 
-    \section{Methods of research}
+    \section{Research design}
 
-    We are going to use two stepped approach: develop and the algorithm in a tailor made simulation
-    and evaluate the results with real footage video. Our main instrument of validation will be the MSE
-    \footnote{Mean Square Error} between the ground truth and filtered position and the quality of prediction
-    with +n frames respectively.
+    \subsection{Operationalization}
 
-    We are going to use a two-stepped approach: 
-    
-    Firstly we will optimize the process noise behaviour in edge cases. 
-    Meaning that at points where the ball is at risk of a sudden change in direction, the filter adapts itself by temporarily altering its process noise parameter.
-    Thus being less prone to overshooting the critical point.
-    We are planning to use a gradient descent algorithm in order to optimize the filter behavior in all states.
+In the following section we are going to operationalize the different terms of our hypothesis.
 
-    Secondly since a rapid change in direction is not a linear problem in terms of implementation of a kalman filter, we are plannning on using linear algebra to reduce this problem 
-    to a linear vector multiplication. By doing so we will achieve not only a sudden but also precise change without utilizing the time invariant input capabilities of the filter.
+\subsubsection{Tracking}
+
+The tracking describes the deviation from the filtered position of the billiard ball (result of Kalman-Filter) to the real position of the billiard ball.
+The position divides into three dimensions, the x-coordinate, the y-coordinate, the z-coordinate.
+Since we are investigating a billiard game we disregard the up-direction (z-coordinate), because the ball moves on a flat surface and will not leave the plane.
+We are measuring the coordinates in pixels. The range of the pixels is defined by the resolution of the input video on which the Kalman-Filter gets applied to.
+The origin, coordinate (0,0), is always the top-left corner.
+The final deviation from the two position is calculated with the Euclidean distance, which results in a length in pixels.
+
+The position of the billiard ball changes over time, because we are investigating video sources.
+To measure the deviation of the whole video and to get a key figure, we are calculating the mean square error (mse) in which the error is the pixel distance between the two positions. 
+
+\subsubsection{Prediction}
+
+The prediction describes the deviation from the calculated future position of the billiard ball to the real position at this specific time.
+The positions use the same measurements as described in the previous chapter.
+The time is measured in frames. The specific number of frames we will look in the future will vary in our experiments.
+To make the frame count comparable with different input video source we align them with the framerate (frames per second) of the video.
+
+\subsubsection{Improvement}
+
+The improvement compares a standard Kalman-Filter to our implementation of the Kalman-Filter.
+The improvement is measured as the difference between the different mean square errors of the tracking and the prediction.
+The smaller the mse of our Kalman-Filter compared to the standard implementation the greater the improvement.
+
+\subsection{Data Acquisition}
+
+We are going to acquire our data from billiard simulations and real videos.
+
+\subsubsection{Simulation}
+
+We construct a simulation to fully control every parameter and the state of the billiard game.
+This helps us to accomplish a better conclusion to the performance in real video.
+Our examination units are the framerate, the ball velocity, the sensor noise.
+
+\paragraph{Framerate}
+
+The framerate describes the framerate of the video, which is equal to the sampling rate of the Kalman-Filter.
+A standard Kalman-Filter performs much worse on low framerate because it gets less data to process.
+We test different framerate to inspect the performance of our implementation for different environments.
+For realtime applications on mobile devices our implementation has to perform well on low framerates.
+We are going to test the standard framerates 30 and 60 FPS and a very low framerate at 10 FPS.
+
+\paragraph{Ball Velocity}
+
+The ball velocity describes the speed of the ball, which depends on how hard the player hits the ball.
+The velocity is measured in pixel per frame.
+The cover a lot of cases, we choose a low velocity of 300 pixel per frame, an average velocity of 500 pixel per frame and a high velocity of 700 pixel per frame.
+We have to keep in mind that a high velocity also leads to more collisions because the ball will move a longer distance.
+
+\paragraph{Sensor Noise}
+
+When we analyze realtime videos we have detect the balls in the video frame.
+The detection is not always perfect and heavily relies on the light conditions and resolution of the camera.
+To simulate the quality of detection we added a noise value which changes the detected ball position by random value in a certain range.
+We test a deviation of 15 pixel, 30 pixel and 60 pixel to inspect how well the Kalman-Filter will perform.
+
+\paragraph{Change of parameters}
+
+To test the parameters individually we only change one parameter at the time.
+Three variations on each parameter lead to 9 simulation environments in total.
+
+\subsubsection{Real Videos}
+
+After testing the filter in the simulation we are also doing some test on random billiard videos.
+Since we are relying on a ball detection algorithm to identify the billiard balls, we cannot obtain the real position of the ball like we could in the simulation.
+That's why we cannot make statements about the tracking quality, but we can evaluate the performance of the tracking.
+
+\subsection{Data Evaluation}
+
+The key figure of evaluation is the mean square error.
+If the means square error of our implementation is lower compared to the standard implementation in every experiment we can prove that our implementation improved the tracking and prediction of billiard balls.
+
 
     \section{Proposed timetable}
 
