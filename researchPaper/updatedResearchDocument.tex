@@ -17,18 +17,16 @@
 % für Grad Symbol
 \usepackage{textcomp}
 
-% Header and Footer
-\usepackage{fancyhdr}
 
 %image grid
 \usepackage{graphicx}
 \usepackage{subfig}
 
-\usepackage{multicol}
+%\usepackage{multicol}
 
-%harvard cite style - use this: \citep{key}
-\usepackage{natbib}
-\setcitestyle{authoryear,open={(},close={)}}
+% Header and Footer
+\usepackage{fancyhdr}
+
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -37,24 +35,23 @@
  
 \begin{document}
 
-\title{Kalman-filter for partial linear systems for tracking pool balls}
-\author{Marlon Lückert \\ Bachelor of Science \\ \href{mailto:marlon.lueckert@haw-hamburg.de}{marlon.lueckert@haw-hamburg.de} 
-   \and Julius Neudecker \\ Bachelor of Science \\ \href{mailto:julius.neudecker@haw-hamburg.de}{julius.neudecker@haw-hamburg.de} }
-\date{June 2020}
-\maketitle
+    \title{Kalman-filter for partial linear systems for tracking pool balls}
+    \author{Marlon Lückert \\ Bachelor of Science \\ \href{mailto:marlon.lueckert@haw-hamburg.de}{marlon.lueckert@haw-hamburg.de} 
+    \and Julius Neudecker \\ Bachelor of Science \\ \href{mailto:julius.neudecker@haw-hamburg.de}{julius.neudecker@haw-hamburg.de} }
+    \date{June 2020}
+    \maketitle
 
-\tableofcontents
+    \tableofcontents
 
-\begin{abstract}
-    In this proposal we are going to discuss an advanced implementation of the Kalman-filter \cite{kalman} to improve measurement quality and predict the movement of balls on a pool table. 
-    We are going to point out the necessity of an advanced filter design in this particular case. The Problem we are going to solve is the following:
-    Since the performance of the filter deteriorates in cases of a rapid change in direction, the filter has to be able to adapt more quickly to these rapid changes.
-    Our plan is to derive an implementations with adaptive behavior. The implementation will be tested in a simulator and with real world video footage of a pool table.
-    The goal is to provide a filter design with a significant lower MSE than a vanilla implementation.
-\end{abstract}
+    \begin{abstract}
+        In this document we are going to discuss an advanced implementation of the Kalman-filter \cite{kalman} improve measurement quality and predict the movement of balls on a pool table. 
+        We are going to point out the necessity of an advanced filter design in this particular case. The Problem we are going to solve is the following:
+        Since the performance of the filter deteriorates in cases of a rapid change in direction, the filter has to be able to adapt more quickly to these rapid changes.
+        Our plan is to derive an implementations with adaptive behavior. The implementation will be tested in a simulator and with real world video footage of a pool table.
+        The goal is to provide a filter design with a significant lower MSE than a vanilla implementation. Furthermore we will point out our methods of research, literature sources
+        and provide a deep insight in our data analyzation.
+    \end{abstract}
 
-
-\begin{multicols}{2}
 
     \section{Introduction}
     At first glance the game of pool is very suitable to examine the behavior of a kalman-filter enhanced tracking system based on pure visual tracking. 
@@ -125,262 +122,259 @@
     Secondly since a rapid change in direction is not a linear problem in terms of implementation of a kalman filter, we are plannning on using linear algebra to reduce this problem 
     to a linear vector multiplication. By doing so we will achieve not only a sudden but also precise change without utilizing the time invariant input capabilities of the filter.
 
+    \section{Research Goals}
+
+    Primarily we are looking for related work in the field of kalman filtering in billiards, to inform ourselves about the current progress of research and state-of-the-art solutions.
+
+    Secondly our goal with the literature research is to find sources of information which complements our expertise. 
+
+    While writing our proposal we identified five aspects where we lack sufficient expertise.
+    These are in particular:
+
+        \paragraph{Design of experiments}
+
+        As outlined in the research proposal we are going to develop our ideas in a simulation. Therefore it is efficient to design the experimental part in advance.
+        This means that we are not going to use a trial-and-error approach but instead invest some time to think about possible outcomes and how to achieve these by 
+        altering different parameters in particular and develop a deeper understanding of their behavior.
+
+        \paragraph{Gradient descent algorithms}
+
+        Since there exist a huge number of different numerical and analytical ways to solve a gradient descent problem it will save time to evaluate the best
+        suitable algorithm prior to implementation to avoid unnecessary work.
+
+        \paragraph{Efficient implementation of algorithms}
+
+        This is especially important since our algorithm is supposed to work in realtime.
+        Therefore any delay induced by inefficient code is unacceptable.
+
+        \paragraph{openCV best practices}
+
+        The analysis of the original footage is made by openCV. Since this library offers a wide variety of different approaches to isolate objecs in videofootage,
+        it is evaluate the best option.
+
+        \paragraph{Measure and comparison of quantifiable data}
+
+        The results in our research will be mainly represented by numbers. To create a better understanding of these numbers and how they interact it is a good approach to 
+        evaluate different methods of putting numbers in context to one another and which scales and graphs are the quasi standard across the research community.
+
+
+    \section{Source of Information}
+
+    For the research regarding \textit{state-of-the-art solutions} and \textit{efficient implementation of algorithms and openCV best practices} it is the best option to look for recent papers since these topics are currently
+    subjects where a certain number of people are working on. Therefore the following archives offer a good starting point to search for up-to-date papers:
+
+    \begin{enumerate}
+        \item IEEE online database
+        \item arXiv.org
+        \item ACM Digital Library
+        \item Google Scholar
+    \end{enumerate}
+
+    The Topics \textit{statistical experimental design and measure and comparison of quantifiable data} are already established in the scientific community.
+    Therefore it is the best approach to consult the latest literature in these particular fields. In our case this can be done to a certain extent with the HIBS database
+    and online services or with actual books in the library.
+
+    \textit{The efficient implementation of algorithms} is less of a scientific problem but of a code-optimization. Hence reading blogs of skilled programmers or threads on
+    \textit{Stackoverflow} seems as the most reasonable approach.
+
+    \section{Criteria for eligible sources}
+
+    The general criteria for any sources are mostly common sense:
+
+    \begin{itemize}
+        \item credibility and plausibility
+        \item a certain standard of quality
+        \item integrity
+    \end{itemize}
+
+    These criteria might seem overly cautious in case the source is a book written by any member of the scientific community. However in the case of short paper or online blog
+    the author of that particular source might not be as credible. Therefore a higher level of scrutiny with the informations provided is necessary.
+
+    Furthermore since the sources might be cited in a paper or dissertation they have to be scientificly quotable. This is expecially true to protect the resulting work against 
+    accusations of plagiarism.
+
+    As already pointed out in the previous section some topics are more subject to change due to present research activities
+    and must therefore reflect the most recent state of research. 
+
+    Another important aspect is especially the case with non-scientific online ressources as blogs and the previously mentioned
+    \textit{Stackoverflow}. Since these sources are also subject to change, it is important to keep track of the particular
+    version of the ressource to prevent confusion in case the ressources changes.
+
+    \section{Sources for our research}
+
+        \subsection{Related Work}
+
+        Jong-Yun Kim and Tae-Yong Kim \cite{kim} developed a method to provide robust tracking of a soccer ball. 
+        They provide a solution for the problem for the case that the soccer ball might be occluded by the player at any given time,
+        which results in a diminished tracking accuracy. 
+        In this case they used the velocity vector of the player to substitute for the ball presuming that the ball moves in the same direction as the player does.
+
+        Jia et.al. \cite{jia} conducted research in the trajectory of pool balls, which helped us to decide which kalman model is the most suitable.
+
+        Shiuh et.al. \cite{shiuh} provided a good starting point how to create a tracking algorithm for pool balls. They also developed an algorithm to track occluded objects using an adaptive kalman filter.
+        In this case they used to threshold in order to determine whether the object can still be reliably tracked. If this isn't the case the filter will rely only on predicted values until the object can be tracked reliably again.
+
+        Salzmann and Urtasun \cite{salzmann} proposed a more general approach for tracking. 
+        They were able to recreate a highly accurate tracking from a noisy picture based on newtons 2nd law and markov models.
+        Using different constraints and presumptions they were even able to extract physical parameters like friction and trajectories.
+
+        Mohamed and Schwarz \cite{schwarz} are using partly the same approach as we do to improve the results created by INS/GPS\footnote{Inertial Navigation System / Global Positioning System} Systems.
+        However their approach only targets the 'Q' and 'R' parameters of the filter.
+
+        Sarkka and Nummenmaa \cite{sarkka} created an adaptive kalman implementation which adapts itself to time-varying noise parameters. Since our input data is constant in this regard,
+        we decided to simulate for the optimal filter parametrization instead of relying on the filter to adapt itself.
+
+        Gabdulkhakova and Kropatsch \cite{kropatsch} use a kalman filter to create a video analysis tool for snooker game broadcasting.
+
+        In the article \cite{wu2017capturing} they use a Kalman filter for smooth estimations of a billiards game.
+
+        In \cite{8273755} they present an adaptive kalman filter, which estimates Q and R values. 
+
+        \subsection{Design of experiments}
+
+        To get a general sense of how statistical experimental design works these Books provide a good introduction into this topic: \cite{siebertz2017statistische} and \cite{retzlaff1978statistische}.
+        Both books are available at our local Library.
+
+        A more practical approach is outlined in the articles \cite{hoevelmann1993statistische} and \cite{schweitzer1992off}.
+
+        \cite{siebertz2017doe} is a good source of examples to put everything in context.
+
+        \subsection{Gradient  descent  algorithms}
+
+        Although the gradient descent method is often used in Machine Learning to optimize parameters in neural networks, we can use it to solve our optimization problem.
+        The articles \cite{ketkar2017deep} and \cite{marti2005stochastic} provides an introduction to the optimization problem with GD methods whereas \cite{marti2005stochastic} gives an overview with more advanced methods.
+
+        \cite{bishop2006pattern} is a very famous book for more advanced topics. Since we've got a basic understanding of how to implement GD in our simulation, we might consider using 
+        some advanced techniques from this book. This might prove especially useful because the normal gradient descent method can only find local minimas.
+
+        \subsection{Efficient implementation  of  algorithms}
+
+        There exist a few different approaches to optimize an algorithm for fast execution. These are in particular paralelization and compiletime optimization.
+
+        Since our optimized filter will highly rely on vector and matrix operations, there is a big potencial for all these optimizations. However since we lack experience in
+        writing special code like this, we have to make us familiar with the basics of such coding.
+
+        For paralelization through parallel hardware we could use openCL. An comprehensive introduction is provided by \cite{trevett2013opencl} and \cite{tompson2012introduction}.
+        Depending on the hardware we also might go with a proprietary GPGPU framework such as CUDA. In case we should decide to use this \cite{nickolls2008scalable} is an introduction into this topic.
+
+        An introduction in compiletime optimization is provided by \cite{hohenauer2006retargetable} and introduction on how to use the new AVX instruction on Intel Processors is given by \cite{cornea2015intel}.
+
+        \subsection{openCV best practices}
+
+        With the article \cite{janku2016comparison} we can get an overview and comparison of different detection algorithms for the OpenCV framework.
+
+        The article \cite{gao2018design} gives an insight on how to design a multi-object detection system for billiards in openCV, which perfectly fits our research case.
+
+        The conference paper \cite{gabel2018jetson} uses neural networks in conjunction with openCV to detect balls.
+        This approach aims for an efficient re-training of neural networks. This is useful for our research, because we can easily adopt the algorithm to different pool environments and do not have to manually adjust the ball detection.
+
+        The thesis \cite{schmidt2016measuring} focuses on performance optimization for speed estimation of balls with openCV on mobile devices. This is useful for our research, because we want to achieve real-time tracking and eventually port the application to mobile devices.
+
+        \subsection{Measure and comparison of quantifiable data}
+
+        Because error analysis is the driving factor behind our research since we want to minimize the error which is produced by an inferior filter-design, we have to make ourselves familiar with
+        state of the art error analysis and the uncertainties of measurement with \cite{taylor1997introduction}. 
+
+        \cite{allen1971mean} provides a good explanation why in predictions it is better to use the MSE instead of the LSE.
+
+        The standard method to visualize the mean square error of Kalman-filters are 2D plots,
+        which can be seen in \cite{8993001} and \cite{1165091}. The y-axis describes the MSE and x-axis the observed parameter.     
+
     \section{Proposed timetable}
 
     To conduct our research in a timely manner, we propose the following schedule to have the finished research paper by the end on June 2020.
 
     \begin{itemize}
-        \item until 20th April: develop the mathematical framework
-        \item until 15th May: develop the simulation and create footage for evaluation
-        \item until 31st May: implement the filter according to optimized parameters
-        \item until 30th June: conclude results and write research paper
+        \item until End of June: develop the mathematical framework
+        \item until End of July: develop the simulation and create footage for evaluation
+        \item until Middle of August: implement the filter according to optimized parameters
+        \item until Middle of September: conclude results and write research paper
     \end{itemize}
 
     We are planning to submit this paper to a conference which has relevance in this particular field of research. This has yet to be determined.
 
-\end{multicols} 
 
-\section{Hypothesis}
+    \section{Operationalization}
 
-The tracking and prediction of billiard balls by a Kalman-Filter improves by explicitly taking the physical conditions of a billiards table into account when implementing the filter.
+    In the following section we are going to operationalize the different terms in our hypthesis.
 
-\section{Operationalization}
+        \subsection{Tracking}
 
-In the following section we are going to operationalize the different terms in our hypthesis.
+        The tracking describes the deviation from the filtered position of the billiard ball (result of Kalman-Filter) to the real position of the billiard ball.
+        The position divides into three dimensions, the x-coordinate, the y-coordinate, the z-coordinate.
+        Since we are investigating a billiard game we disregard the up-direction (z-coordinate), because the ball moves on a flat surface and will not leave the plane.
+        We are measuring the coordinates in pixels. The range of the pixels is defined by the resolution of the input video on which the Kalman-Filter gets applied to.
+        The origin, coordinate (0,0), is always the top-left corner.
+        The final deviation from the two position is calculated with the Euclidean distance, which results in a length in pixels.
 
-\subsection{Tracking}
+        The position of the billiard ball changes over time, because we are investigating video sources.
+        To measure the deviation of the whole video and to get a key figure, we are calculating the mean square error (mse) in which the error is the pixel distance between the two positions. 
 
-The tracking describes the deviation from the filtered position of the billiard ball (result of Kalman-Filter) to the real position of the billiard ball.
-The position divides into three dimensions, the x-coordinate, the y-coordinate, the z-coordinate.
-Since we are investigating a billiard game we disregard the up-direction (z-coordinate), because the ball moves on a flat surface and will not leave the plane.
-We are measuring the coordinates in pixels. The range of the pixels is defined by the resolution of the input video on which the Kalman-Filter gets applied to.
-The origin, coordinate (0,0), is always the top-left corner.
-The final deviation from the two position is calculated with the Euclidean distance, which results in a length in pixels.
+        \subsection{Prediction}
 
-The position of the billiard ball changes over time, because we are investigating video sources.
-To measure the deviation of the whole video and to get a key figure, we are calculating the mean square error (mse) in which the error is the pixel distance between the two positions. 
+        The prediction describes the deviation from the calculated future position of the billiard ball to the real position at this specific time.
+        The positions use the same measurements as described in the previous chapter.
+        The time is measured in frames. The specific number of frames we will look in the future will vary in our experiments.
+        To make the frame count comparable with different input video source we align them with the framerate (frames per second) of the video.
 
-\subsection{Prediction}
+        \subsection{Improvement}
 
-The prediction describes the deviation from the calculated future position of the billiard ball to the real position at this specific time.
-The positions use the same measurements as described in the previous chapter.
-The time is measured in frames. The specific number of frames we will look in the future will vary in our experiments.
-To make the frame count comparable with different input video source we align them with the framerate (frames per second) of the video.
+        The improvement compares a standard Kalman-Filter to our implementation of the Kalman-Filter.
+        The improvement is measured as the difference between the different mean square errors of the tracking and the prediction.
+        The smaller the mse of our Kalman-Filter compared to the standard implementation the greater the improvement.
 
-\subsection{Improvement}
+    \section{Data Acquisition}
 
-The improvement compares a standard Kalman-Filter to our implementation of the Kalman-Filter.
-The improvement is measured as the difference between the different mean square errors of the tracking and the prediction.
-The smaller the mse of our Kalman-Filter compared to the standard implementation the greater the improvement.
+    We are going to acquire our data from billiard simulations and real videos.
 
-\section{Data Acquisition}
+        \subsection{Simulation}
 
-We are going to acquire our data from billiard simulations and real videos.
+        We construct a simulation to fully control every parameter and the state of the billiard game.
+        This helps us to accomplish a better conclusion to the performance in real video.
+        Our examination units are the framerate, the ball velocity, the sensor noise.
 
-\subsection{Simulation}
+            \paragraph{Framerate}
 
-We construct a simulation to fully control every parameter and the state of the billiard game.
-This helps us to accomplish a better conclusion to the performance in real video.
-Our examination units are the framerate, the ball velocity, the sensor noise.
+            The framerate describes the framerate of the video, which is equal to the sampling rate of the Kalman-Filter.
+            A standard Kalman-Filter performs much worse on low framerate because it gets less data to process.
+            We test different framerate to inspect the performance of our implementation for different environments.
+            For realtime applications on mobile devices our implementation has to perform well on low framerates.
+            We are going to test the standard framerates 30 and 60 FPS and a very low framerate at 10 FPS.
 
-\paragraph{Framerate}
+            \paragraph{Ball Velocity}
 
-The framerate describes the framerate of the video, which is equal to the sampling rate of the Kalman-Filter.
-A standard Kalman-Filter performs much worse on low framerate because it gets less data to process.
-We test different framerate to inspect the performance of our implementation for different environments.
-For realtime applications on mobile devices our implementation has to perform well on low framerates.
-We are going to test the standard framerates 30 and 60 FPS and a very low framerate at 10 FPS.
+            The ball velocity describes the speed of the ball, which depends on how hard the player hits the ball.
+            The velocity is measured in pixel per frame.
+            The cover a lot of cases, we choose a low velocity of 300 pixel per frame, an average velocity of 500 pixel per frame and a high velocity of 700 pixel per frame.
+            We have to keep in mind that a high velocity also leads to more collisions because the ball will move a longer distance.
 
-\paragraph{Ball Velocity}
+            \paragraph{Sensor Noise}
 
-The ball velocity describes the speed of the ball, which depends on how hard the player hits the ball.
-The velocity is measured in pixel per frame.
-The cover a lot of cases, we choose a low velocity of 300 pixel per frame, an average velocity of 500 pixel per frame and a high velocity of 700 pixel per frame.
-We have to keep in mind that a high velocity also leads to more collisions because the ball will move a longer distance.
+            When we analyze realtime videos we have detect the balls in the video frame.
+            The detection is not always perfect and heavily relies on the light conditions and resolution of the camera.
+            To simulate the quality of detection we added a noise value which changes the detected ball position by random value in a certain range.
+            We test a deviation of 15 pixel, 30 pixel and 60 pixel to inspect how well the Kalman-Filter will perform.
 
-\paragraph{Sensor Noise}
+            \paragraph{Change of parameters}
 
-When we analyze realtime videos we have detect the balls in the video frame.
-The detection is not always perfect and heavily relies on the light conditions and resolution of the camera.
-To simulate the quality of detection we added a noise value which changes the detected ball position by random value in a certain range.
-We test a deviation of 15 pixel, 30 pixel and 60 pixel to inspect how well the Kalman-Filter will perform.
+            To test the parameters individually we only change one parameter at the time.
+            Three variations on each parameter lead to 9 simulation environments in total.
 
-\paragraph{Change of parameters}
+        \subsection{Real Videos}
 
-To test the parameters individually we only change one parameter at the time.
-Three variations on each parameter lead to 9 simulation environments in total.
+        After testing the filter in the simulation we are also doing some test on random billiard videos.
+        Since we are relying on a ball detection algorithm to identify the billiard balls, we cannot obtain the real position of the ball like we could in the simulation.
+        That's why we cannot make statements about the tracking quality, but we can evaluate the performance of the tracking.
 
-\subsection{Real Videos}
+    \section{Data Evaluation}
 
-After testing the filter in the simulation we are also doing some test on random billiard videos.
-Since we are relying on a ball detection algorithm to identify the billiard balls, we cannot obtain the real position of the ball like we could in the simulation.
-That's why we cannot make statements about the tracking quality, but we can evaluate the performance of the tracking.
+    The key figure of evaluation is the mean square error.
+    If the means square error of our implementation is lower compared to the standard implementation in every experiment we can prove that our implementation improved the tracking and prediction of billiard balls.
 
-\section{Data Evaluation}
 
-The key figure of evaluation is the mean square error.
-If the means square error of our implementation is lower compared to the standard implementation in every experiment we can prove that our implementation improved the tracking and prediction of billiard balls.
 
-\section{Research Goals}
-
-Primarily we are looking for related work in the field of kalman filtering in billiards, to inform ourselves about the current progress of research and state-of-the-art solutions.
-
-Secondly our goal with the literature research is to find sources of information which complements our expertise. 
-
-While writing our proposal we identified five aspects where we lack sufficient expertise.
-These are in particular:
-
-\paragraph{Design of experiments}
-
-As outlined in the research proposal we are going to develop our ideas in a simulation. Therefore it is efficient to design the experimental part in advance.
-This means that we are not going to use a trial-and-error approach but instead invest some time to think about possible outcomes and how to achieve these by 
-altering different parameters in particular and develop a deeper understanding of their behavior.
-
-\paragraph{Gradient descent algorithms}
-
-Since there exist a huge number of different numerical and analytical ways to solve a gradient descent problem it will save time to evaluate the best
-suitable algorithm prior to implementation to avoid unnecessary work.
-
-\paragraph{Efficient implementation of algorithms}
-
-This is especially important since our algorithm is supposed to work in realtime.
-Therefore any delay induced by inefficient code is unacceptable.
-
-\paragraph{openCV best practices}
-
-The analysis of the original footage is made by openCV. Since this library offers a wide variety of different approaches to isolate objecs in videofootage,
-it is evaluate the best option.
-
-\paragraph{Measure and comparison of quantifiable data}
-
-The results in our research will be mainly represented by numbers. To create a better understanding of these numbers and how they interact it is a good approach to 
-evaluate different methods of putting numbers in context to one another and which scales and graphs are the quasi standard across the research community.
-
-
-\section{Source of Information}
-
-For the research regarding \textit{state-of-the-art solutions} and \textit{efficient implementation of algorithms and openCV best practices} it is the best option to look for recent papers since these topics are currently
-subjects where a certain number of people are working on. Therefore the following archives offer a good starting point to search for up-to-date papers:
-
-\begin{enumerate}
-    \item IEEE online database
-    \item arXiv.org
-    \item ACM Digital Library
-    \item Google Scholar
-\end{enumerate}
-
-The Topics \textit{statistical experimental design and measure and comparison of quantifiable data} are already established in the scientific community.
-Therefore it is the best approach to consult the latest literature in these particular fields. In our case this can be done to a certain extent with the HIBS database
-and online services or with actual books in the library.
-
-\textit{The efficient implementation of algorithms} is less of a scientific problem but of a code-optimization. Hence reading blogs of skilled programmers or threads on
-\textit{Stackoverflow} seems as the most reasonable approach.
-
-\section{Criteria for eligible sources}
-
-The general criteria for any sources are mostly common sense:
-
-\begin{itemize}
-    \item credibility and plausibility
-    \item a certain standard of quality
-    \item integrity
-\end{itemize}
-
-These criteria might seem overly cautious in case the source is a book written by any member of the scientific community. However in the case of short paper or online blog
-the author of that particular source might not be as credible. Therefore a higher level of scrutiny with the informations provided is necessary.
-
-Furthermore since the sources might be cited in a paper or dissertation they have to be scientificly quotable. This is expecially true to protect the resulting work against 
-accusations of plagiarism.
-
-As already pointed out in the previous section some topics are more subject to change due to present research activities
-and must therefore reflect the most recent state of research. 
-
-Another important aspect is especially the case with non-scientific online ressources as blogs and the previously mentioned
-\textit{Stackoverflow}. Since these sources are also subject to change, it is important to keep track of the particular
-version of the ressource to prevent confusion in case the ressources changes.
-
-\section{Sources for our research}
-
-\subsection{Related Work}
-
-Jong-Yun Kim and Tae-Yong Kim \cite{kim} developed a method to provide robust tracking of a soccer ball. 
-They provide a solution for the problem for the case that the soccer ball might be occluded by the player at any given time,
-which results in a diminished tracking accuracy. 
-In this case they used the velocity vector of the player to substitute for the ball presuming that the ball moves in the same direction as the player does.
-
-Jia et.al. \cite{jia} conducted research in the trajectory of pool balls, which helped us to decide which kalman model is the most suitable.
-
-Shiuh et.al. \cite{shiuh} provided a good starting point how to create a tracking algorithm for pool balls. They also developed an algorithm to track occluded objects using an adaptive kalman filter.
-In this case they used to threshold in order to determine whether the object can still be reliably tracked. If this isn't the case the filter will rely only on predicted values until the object can be tracked reliably again.
-
-Salzmann and Urtasun \cite{salzmann} proposed a more general approach for tracking. 
-They were able to recreate a highly accurate tracking from a noisy picture based on newtons 2nd law and markov models.
-Using different constraints and presumptions they were even able to extract physical parameters like friction and trajectories.
-
-Mohamed and Schwarz \cite{schwarz} are using partly the same approach as we do to improve the results created by INS/GPS\footnote{Inertial Navigation System / Global Positioning System} Systems.
-However their approach only targets the 'Q' and 'R' parameters of the filter.
-
-Sarkka and Nummenmaa \cite{sarkka} created an adaptive kalman implementation which adapts itself to time-varying noise parameters. Since our input data is constant in this regard,
-we decided to simulate for the optimal filter parametrization instead of relying on the filter to adapt itself.
-
-Gabdulkhakova and Kropatsch \cite{kropatsch} use a kalman filter to create a video analysis tool for snooker game broadcasting.
-
-In the article \citep{wu2017capturing} they use a Kalman filter for smooth estimations of a billiards game.
-
-In \citep{8273755} they present an adaptive kalman filter, which estimates Q and R values. 
-
-\subsection{Design of experiments}
-
-To get a general sense of how statistical experimental design works these Books provide a good introduction into this topic: \citep{siebertz2017statistische} and \citep{retzlaff1978statistische}.
-Both books are available at our local Library.
-
-A more practical approach is outlined in the articles \citep{hoevelmann1993statistische} and \citep{schweitzer1992off}.
-
-\citep{siebertz2017doe} is a good source of examples to put everything in context.
-
-\subsection{Gradient  descent  algorithms}
-
-Although the gradient descent method is often used in Machine Learning to optimize parameters in neural networks, we can use it to solve our optimization problem.
-The articles \citep{ketkar2017deep} and \citep{marti2005stochastic} provides an introduction to the optimization problem with GD methods whereas \citep{marti2005stochastic} gives an overview with more advanced methods.
-
-\citep{bishop2006pattern} is a very famous book for more advanced topics. Since we've got a basic understanding of how to implement GD in our simulation, we might consider using 
-some advanced techniques from this book. This might prove especially useful because the normal gradient descent method can only find local minimas.
-
-\subsection{Efficient implementation  of  algorithms}
-
-There exist a few different approaches to optimize an algorithm for fast execution. These are in particular paralelization and compiletime optimization.
-
-Since our optimized filter will highly rely on vector and matrix operations, there is a big potencial for all these optimizations. However since we lack experience in
-writing special code like this, we have to make us familiar with the basics of such coding.
-
-For paralelization through parallel hardware we could use openCL. An comprehensive introduction is provided by \citep{trevett2013opencl} and \citep{tompson2012introduction}.
-Depending on the hardware we also might go with a proprietary GPGPU framework such as CUDA. In case we should decide to use this \citep{nickolls2008scalable} is an introduction into this topic.
-
-An introduction in compiletime optimization is provided by \citep{hohenauer2006retargetable} and introduction on how to use the new AVX instruction on Intel Processors is given by \citep{cornea2015intel}.
-
-\subsection{openCV best practices}
-
-With the article \citep{janku2016comparison} we can get an overview and comparison of different detection algorithms for the OpenCV framework.
-
-The article \citep{gao2018design} gives an insight on how to design a multi-object detection system for billiards in openCV, which perfectly fits our research case.
-
-The conference paper \citep{gabel2018jetson} uses neural networks in conjunction with openCV to detect balls.
-This approach aims for an efficient re-training of neural networks. This is useful for our research, because we can easily adopt the algorithm to different pool environments and do not have to manually adjust the ball detection.
-
-The thesis \citep{schmidt2016measuring} focuses on performance optimization for speed estimation of balls with openCV on mobile devices. This is useful for our research, because we want to achieve real-time tracking and eventually port the application to mobile devices.
-
-\subsection{Measure and comparison of quantifiable data}
-
-Because error analysis is the driving factor behind our research since we want to minimize the error which is produced by an inferior filter-design, we have to make ourselves familiar with
-state of the art error analysis and the uncertainties of measurement with \citep{taylor1997introduction}. 
-
-\citep{allen1971mean} provides a good explanation why in predictions it is better to use the MSE instead of the LSE.
-
-The standard method to visualize the mean square error of Kalman-filters are 2D plots,
-which can be seen in \citep{8993001} and \citep{1165091}. The y-axis describes the MSE and x-axis the observed parameter. 
-
-\bibliography{updatedReferences} 
-\bibliographystyle{ieeetr}
+    \bibliography{updatedReferences} 
+    \bibliographystyle{ieeetr}
 
 
 \end{document}
