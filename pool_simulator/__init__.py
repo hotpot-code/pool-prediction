@@ -6,18 +6,23 @@ from .Ball import Ball
 from .Bank import Bank
 import csv
 
-class PoolSimulation():
+class PoolSimulation:
+
+    table_width = 2000
+    table_height = 1000
+    inset = 100
 
     def __init__(self, start_position = (960,540), start_angle = math.pi/2 + 0.3, start_velocity = 900, friction = 0.06, seconds = 0.16, noise=2):
         self.ball = Ball(start_position, 25, start_velocity, friction, noise)
         self.ball.setRotation(start_angle)
-        self.bank_left = Bank((100,100), (100, 980))
+
+        self.bank_left = Bank((PoolSimulation.inset, PoolSimulation.inset), (PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_height))
         self.can_hit_left_bank = True
-        self.bank_right = Bank((1820,100), (1820, 980))
+        self.bank_right = Bank((PoolSimulation.inset + PoolSimulation.table_width, PoolSimulation.inset), (PoolSimulation.inset + PoolSimulation.table_width, PoolSimulation.inset + PoolSimulation.table_height))
         self.can_hit_right_bank = True
-        self.bank_top = Bank((100,100), (1820, 100))
+        self.bank_top = Bank((PoolSimulation.inset, PoolSimulation.inset), (PoolSimulation.inset + PoolSimulation.table_width, PoolSimulation.inset))
         self.can_hit_top_bank = True
-        self.bank_bottom = Bank((100,980), (1820, 980))
+        self.bank_bottom = Bank((PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_height), (PoolSimulation.inset + PoolSimulation.table_width, PoolSimulation.inset + PoolSimulation.table_height))
         self.can_hit_bottom_bank = True
         self.game_objects = [self.ball, self.bank_left, self.bank_right, self.bank_bottom, self.bank_top]
         self.bank_hits = 0
@@ -46,7 +51,7 @@ class PoolSimulation():
             sim.ball.position = (float(row[0]), float(row[1]))
 
             # Get frame from video
-            frame = np.zeros((1080, 1920, 3), np.uint8)
+            frame = np.zeros((PoolSimulation.table_height + PoolSimulation.inset * 2, PoolSimulation.table_width + PoolSimulation.inset * 2, 3), np.uint8)
 
             sim.isBallNearBank = False
             if sim.ball.position[1] + sim.ball.size * sim.bankDetectionRadius >= sim.bank_bottom.p1[1]:
@@ -70,7 +75,7 @@ class PoolSimulation():
     
     def update(self):
         # Get frame from video
-        frame = np.zeros((1080, 1920, 3), np.uint8)
+        frame = np.zeros((PoolSimulation.table_height + PoolSimulation.inset * 2, PoolSimulation.table_width + PoolSimulation.inset * 2, 3), np.uint8)
 
         self.ball.update(self.seconds)
 
