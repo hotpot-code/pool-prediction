@@ -61,7 +61,7 @@
 
 \title{Pool-Predictor - a Kalman-Filter Implementation}
 \author{Marlon Lückert B.Sc. - Julius Neudecker B.Sc.}
-\date{Feburary 2020}
+\date{June 2020}
 
 \maketitle
 
@@ -71,7 +71,7 @@ We are going to point out the reasoning why we implemented the filter as a const
 Since the performance of the filter deteriorates in cases of a rapid change in direction, we derived two different implementations with adaptive behavior.
 The implementations were tested in a simulator and with real world video footage of a pool table.
 We conclude this paper with a performance evaluation of the implementation and provide a proposal to further increase accuracy.
-
++
 \end{abstract}
 
 \keywords{kalman, pool, prediction, filter}
@@ -97,8 +97,8 @@ The quality of this prediction however depends on several factors, which we disc
 
 \subsection{Visual Recognition of moving elements}
 
-In order to create a state-vector input we have to track the balls on the pool table. 
-To provide consistent and reproducible results, we used video footage and processed them with the Python implementation of openCV.
+In order to create a input vector we have to track the balls on the pool table. 
+To provide consistent and reproducible results, we used video footage and processed it with the Python implementation of openCV.
 A video example as seen in \cref{pic:pool-color} is put into an instance of simple video-processing steps to create a black and white mask of the ball contours as displayed in \cref{pic:pool-bw},
 where the center of the white pixel cluster is the ball we're looking for.
 
@@ -116,11 +116,9 @@ where the center of the white pixel cluster is the ball we're looking for.
     \label{pic:pool-bw}
 \end{figure}
 
-This type of vision based tracking works reliably for our requirements.
-
 \section{Related Work}
 
-In the following section, we are going to discuss some previous work that is related to our work but none of these articles targets the problem in the same manner.
+In this section, we are going to discuss some previous work that is related to our work but none of these articles targets the problem in the same manner.
 
 Jong-Yun Kim and Tae-Yong Kim \cite{kim} developed a method to provide robust tracking of a soccer ball. 
 They provide a solution for the problem for the case that the soccer ball might be occluded by the player at any given time,
@@ -139,13 +137,14 @@ Using different constraints and presumptions they were even able to extract phys
 Mohamed and Schwarz \cite{schwarz} are using partly the same approach as we do to improve the results created by INS/GPS\footnote{Inertial Navigation System / Global Positioning System} Systems.
 However their approach only targets the 'Q' and 'R' parameters of the filter.
 
-Sarkka and Nummenmaa \cite{sarkka} created an adaptive kalman implementation which adapts itself to time-varying noise parameters. Since our input data is constant in this regard,
-we decided to simulate for the optimal filter parametrization instead of relying on the filter to adapt itself.
+Sarkka and Nummenmaa \cite{sarkka} created an adaptive kalman implementation which adapts itself to time-varying noise parameters. 
+Since our filter only has two states, we decided to simulate for the optimal filter parametrization instead of relying on the filter to adapt itself.
 
 Gabdulkhakova and Kropatsch \cite{kropatsch} use a kalman filter to create a video analysis tool for snooker game broadcasting.
+They were able to show how to track snooker balls with non-linear motion.
 
 \section{Implementation} \label{implementation}
-In this section we're going to discuss the different implementations and their constraints. The filter implementations in section \cref{dynamic-q} and \cref{smart-filter} are derived from
+In this section we're going to discuss the different implementations and their constraints. The filter implementations in section Dynamic-q and Smart Filter are derived from
 the basic implementation in \cref{kalman-basic}. At the end of this section we will provide a comparison of all filter types and their performance in our simulation.
 
 \subsection{Kalman Filter} \label{kalman-basic}
@@ -153,18 +152,20 @@ the basic implementation in \cref{kalman-basic}. At the end of this section we w
 The basic layout and working mechanism of a kalman filter is in described in detail in \cite{kalman}. 
 However in order to fully understand our improvements we provide an introduction to the crucial parts of the kalman filter.
 
-Its purpose is to filter noisy or unreliable sensor data. Its doing this by comparing predictions made based on the model and actual measurements. 
-Depending on the filter gain it will use a bigger portion of either. This estimated value represents the actual state of the measured system and is used to make the next estimation.
+Its purpose is to filter noisy or unreliable sensor data. 
+Its doing this by comparing predictions based on the physical model and the sensor data. 
+Depending on the filter gain it will use a bigger portion of either. 
+This estimated value represents the actual state of the measured system and is used for the new estimate.
 
 This is represented in \cref{eq1}
 
 \begin{equation} 
     \label{eq1}
-    \hat{x}[n]=\tilde{x}[n]+K*(y[n]-C*\tilde{x}[n])
+    \hat{x}[n]=\tilde{x}[n]+K\cdot(y[n]-C\cdot\tilde{x}[n])
 \end{equation}
 
-Where $K$ represents a factor, which determines the amount of measured values applied to the prediction to create a new estimation. It is defined as in \cref{eq2}, 
-where $\tilde{P}[n]$ is the prediction error from the current prediction, $C^T$ is a matrix to map our state vector to our system model and $S$ represents the combined error of estimation error and measurement noise.
+Where $K$ represents a matrix, which determines the amount of measured values applied to the prediction to create a new estimation. It is defined as in \cref{eq2}, 
+where $\tilde{P}[n]$ is the prediction error of the current prediction, $C^T$ is a matrix to map our state vector to our measurement-model and $S$ represents the covariance matrix of the residual.
 
 \begin{equation} 
     \label{eq2}
@@ -180,7 +181,7 @@ Every prediction which is used in \cref{eq1}, was previously calculated using th
 
 The important parts for our further development are $A_d$ in \cref{eq3} and $\tilde{P}[n]$ in \cref{eq2}. The state transition matrix $Ad$ defines the motion model of our filter.
 There are two principal models which we are going to examine: 
-the constant velocity model (CVM) and constant acceleration model (CAM). This determines the state transition matrix $A_d$ and defines the constant component: velocity or acceleration.
+the constant velocity model (CVM) and constant acceleration model (CAM). This determines the state transition matrix $A_d$ and defines the constant component of the state-time derivative: velocity or acceleration.
 The estimation error $\tilde{P}[n]$ is defined in \cref{eq4}:
 
 \begin{equation} 
@@ -190,9 +191,9 @@ The estimation error $\tilde{P}[n]$ is defined in \cref{eq4}:
 
 The element $Q$ is the important part here. It defines the amount of systemnoise in the whole filter process, which we are going to discuss in \cref{dynamic-q}.
 
-\subsection{Dynamic Q-parameters} \label{dynamic-q}
+\subsection{Dynamic CVM Q-parameters} \label{dynamic-q}
 
-We previously mentioned in \cref{intro}, that the filter can't adapt to sudden changes in direction of the moving object. 
+We previously mentioned in \cref{intro}, that depending on the model the filter can't adapt to sudden changes in direction of the moving object. 
 The case where the ball collides with the cushion can be mitigated by choosing a different values for $Q$ in \cref{eq4} within the crucial time window.
 Thus the filter relies more on the measurement than the estimations. By doing so it can adapt momentarily.
 We implemented a look-up table and constantly check every sample for proximity to a cushion.
@@ -211,7 +212,7 @@ There is clearly a sweetspot for the optimal parametrization, which we chose to 
 Although the optimal area continues further up the ordinate, it does not make sense to look for optimal parametrization there
 because increasing these values would mean to approach the behavior of the sensor what wouldn't be beneficial.
 
-\subsection{Smart Filter} \label{smart-filter}
+\subsection{Smart CVM Filter} \label{smart-filter}
 
 In addition to the previous section we developed another improvement. In this case it can be assumed that the angle of incidence is equal to angle of reflection. 
 With this assumption we can now implement the reflection with a single vector-multiplication expression. 
@@ -240,7 +241,7 @@ As in the previous section this operation can be performed, when the ball hits t
 
 \subsection{Filter performance comparison} \label{perf-comp}
 
-We developed a simulation, where we could test different parameters and scenarios to get consistent results. 
+We developed a simulation, where we could test different parameters and scenarios to get reproductible results. 
 We also used this simulation to determine the optimal value for the process noise in \cref{dynamic-q}. The results are shown in \cref{fig:sim-results}:
 
 \begin{figure}[H]
@@ -357,7 +358,8 @@ it is more complicated in this case due to the edge cases.
 As seen on \cref{fig:edge-case} the collision between the ball and the cushion is happens between sample 1 and 2. 
 The filter detects this and turns the velocity vector as described in \cref{smart-filter}.
 By the time of sample 3 the vector points in the right direction but with a offset. The correct solution however is shown in \cref{fig:edge-case-sol}:
-The overshoot of sample 2 is corrected and mirrored on the point of collision, which affects the following samples. This has a large positive impact on prediction accuracy as well as filter error.
+The overshoot of sample 2 is corrected and mirrored on the point of collision, which affects the following samples. 
+This will likely have a large positive impact on prediction accuracy as well as filter error.
 
 \begin{figure}[H]
     \centering
@@ -366,7 +368,7 @@ The overshoot of sample 2 is corrected and mirrored on the point of collision, w
     \label{fig:edge-case-sol}
 \end{figure}
 
-This enhancement is not implemented yet but is a starting point for further improvement.
+Therefore it is a good starting point for further development.
 
 \section{Acknowledgement}
 
