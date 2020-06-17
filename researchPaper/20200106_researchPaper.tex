@@ -169,14 +169,14 @@ where $\tilde{P}[n]$ is the prediction error of the current prediction, $C^T$ is
 
 \begin{equation} 
     \label{eq2}
-    K=\tilde{P}[n]*C^T+S^{-1}
+    K=\tilde{P}[n]\cdot C^T+S^{-1}
 \end{equation}
 
 Every prediction which is used in \cref{eq1}, was previously calculated using the state transition model $A_d$:
 
 \begin{equation} 
     \label{eq3}
-    \tilde{x}[n]=A_d*\hat{x}[n-1]
+    \tilde{x}[n]=A_d\cdot\hat{x}[n-1]
 \end{equation}
 
 The important parts for our further development are $A_d$ in \cref{eq3} and $\tilde{P}[n]$ in \cref{eq2}. The state transition matrix $Ad$ defines the motion model of our filter.
@@ -186,7 +186,7 @@ The estimation error $\tilde{P}[n]$ is defined in \cref{eq4}:
 
 \begin{equation} 
     \label{eq4}
-    \tilde{P}[n]=A_d*\hat{P}[n-1]*A_d^T+G_d*Q*G_d^T
+    \tilde{P}[n]=A_d\cdot\hat{P}[n-1]\cdot A_d^T+G_d\cdot Q\cdot G_d^T
 \end{equation}
 
 The element $Q$ is the important part here. It defines the amount of systemnoise in the whole filter process, which we are going to discuss in \cref{dynamic-q}.
@@ -227,7 +227,7 @@ Assuming that we have a velocity vector pointing in the direction of $x$ and $y$
       v_x \\
       v_y
     \end{array}
-    \!\right) *
+    \!\right) \cdot
     \left(\!
     \begin{array}{c}
         -1 \\
