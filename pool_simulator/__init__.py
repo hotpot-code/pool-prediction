@@ -13,7 +13,7 @@ class PoolSimulation:
     inset = 100
 
     def __init__(self, start_position = (960,540), start_angle = math.pi/2 + 0.3, start_velocity = 900, friction = 0.06, seconds = 0.16, noise=2):
-        self.ball = Ball(start_position, 25, start_velocity, friction, noise)
+        self.ball = Ball(start_position, 52, start_velocity, friction, noise)
         self.ball.setRotation(start_angle)
 
         self.bank_left = Bank((PoolSimulation.inset, PoolSimulation.inset), (PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_height))
