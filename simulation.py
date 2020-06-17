@@ -354,35 +354,40 @@ def show_prediction_boxplot(simulations, filter=0, pre_nos=(15, 30, 60)):
 
 if __name__ == "__main__":
 
-    # create simulation files
-    testing_noise = [10, 50.0, 100.0]
-    # convert m/s to frames/sec: 9 f/s = 1 cm/s (table width is 2000 pixel in simulation and 224cm in reallife)
-    testing_start_velocity = [9 * 80, 9 * 100, 9 * 400]
-    testing_fps = [60, 30, 15]
+    # # create simulation files
+    # # 9 pixels are 1 cm (table width is 2000 pixel in simulation and 224cm in reallife)
+    # testing_noise = [9.0, 27.0, 45.0]
+    # # convert m/s to frames/sec: 9 f/s = 1 cm/s (table width is 2000 pixel in simulation and 224cm in reallife)
+    # testing_start_velocity = [9 * 80, 9 * 100, 9 * 400]
+    # testing_fps = [60, 30, 15]
     
-    for noise in testing_noise:
-        for vel in testing_start_velocity:
-            for fps in testing_fps:
-                sim = Simulation(noise=noise, start_velocity=vel, update_time_in_secs=(1.0 / fps))
-                sim.create_csv("simulations/sim_" + str(noise) + "_" + str(vel) + "_" + str(fps) + ".csv")
+    # for noise in testing_noise:
+    #     for vel in testing_start_velocity:
+    #         for fps in testing_fps:
+    #             sim = Simulation(noise=noise, start_velocity=vel, update_time_in_secs=(1.0 / fps))
+    #             sim.create_csv("simulations/sim_" + str(noise) + "_" + str(vel) + "_" + str(fps) + ".csv")
 
-    # sim = Simulation()
+    sim = Simulation()
 
-    # normal_cam = CAM_Filter(1.0/60, 45290, 2.0, name="CAM Filter")
-    # normal_cvm = Smart_CVM_Filter(1.0 / 60, 2210, 2.0, name="CVM Filter", smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
-    # smart_cvm = Smart_CVM_Filter(1.0 / 60, 533, 2.0, name="Smart CVM").setBoundaries(100, 1820, 100, 980).setRadius(25)
-    # cam_dynamic = Smart_CAM_Filter(1.0/60, 400, 2.0, name="dynamic CAM", dynamic_process_noise=40000, smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
-    # cvm_dynamic = Smart_CVM_Filter(1.0/60, 300, 2.0, name="dynamic CVM", dynamic_process_noise=2210, smart_prediction=False).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    boundaries = (PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_width, PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_height)
 
-    # cam_smart = Smart_CAM_Filter(1.0/60, 511, 2.0, name="Smart CAM", dynamic_process_noise=None, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
-    # smart_dyn_cvm = Smart_CVM_Filter(1.0 / 60, 350, 2.0, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(100, 1820, 100, 980).setRadius(25)
-    # cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 350, 2.0, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    noise = 9.0
 
-    # filters = [normal_cvm, cvm_dynamic, smart_cvm]
-    # sim.run(filters, show_video=True, show_prediction=2, save_prediction=True, file="simulations/sim_2.0_500_60.csv")
-    # #sim.show_mse_velocity_comparison_plot()
-    # sim.show_mse_comparison_plot(pre_no=30)
-    # #sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
-    # #sim.show_prediction_plot(filters=(1, 2), pre_nos=[30], show_bank=True)
+    normal_cam = CAM_Filter(1.0/60, 45290, noise, name="CAM Filter")
+    normal_cvm = Smart_CVM_Filter(1.0 / 60, 2210, noise, name="CVM Filter", smart_prediction=False).setBoundaries(*boundaries).setRadius(52)
+    smart_cvm = Smart_CVM_Filter(1.0 / 60, 533, noise, name="Smart CVM").setBoundaries(*boundaries).setRadius(52)
+    cam_dynamic = Smart_CAM_Filter(1.0/60, 400, noise, name="dynamic CAM", dynamic_process_noise=40000, smart_prediction=False).setBoundaries(*boundaries).setRadius(52)
+    cvm_dynamic = Smart_CVM_Filter(1.0/60, 300, noise, name="dynamic CVM", dynamic_process_noise=2210, smart_prediction=False).setBoundaries(*boundaries).setRadius(52)
 
-    # #show_prediction_boxplot([sim, sim2, sim3], 2)
+    cam_smart = Smart_CAM_Filter(1.0/60, 511, noise, name="Smart CAM", dynamic_process_noise=None, smart_prediction=True).setBoundaries(*boundaries).setRadius(52)
+    smart_dyn_cvm = Smart_CVM_Filter(1.0 / 60, 350, noise, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(*boundaries).setRadius(52)
+    cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 350, noise, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(*boundaries).setRadius(52)
+
+    filters = [normal_cvm, cvm_dynamic, smart_cvm]
+    sim.run(filters, show_video=True, show_prediction=2, save_prediction=True, file="simulations/sim_9.0_900_60.csv")
+    #sim.show_mse_velocity_comparison_plot()
+    sim.show_mse_comparison_plot(pre_no=30)
+    #sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
+    #sim.show_prediction_plot(filters=(1, 2), pre_nos=[30], show_bank=True)
+
+    #show_prediction_boxplot([sim, sim2, sim3], 2)
