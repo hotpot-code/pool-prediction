@@ -370,18 +370,22 @@ if __name__ == "__main__":
     sim = Simulation()
 
     boundaries = (PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_width, PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_height)
+    ball_radius = 52
 
     noise = 9.0
+    fps = 1.0 / 60
 
-    normal_cam = CAM_Filter(1.0/60, 45290, noise, name="CAM Filter")
-    normal_cvm = Smart_CVM_Filter(1.0 / 60, 2210, noise, name="CVM Filter", smart_prediction=False).setBoundaries(*boundaries).setRadius(52)
-    smart_cvm = Smart_CVM_Filter(1.0 / 60, 533, noise, name="Smart CVM").setBoundaries(*boundaries).setRadius(52)
-    cam_dynamic = Smart_CAM_Filter(1.0/60, 400, noise, name="dynamic CAM", dynamic_process_noise=40000, smart_prediction=False).setBoundaries(*boundaries).setRadius(52)
-    cvm_dynamic = Smart_CVM_Filter(1.0/60, 300, noise, name="dynamic CVM", dynamic_process_noise=2210, smart_prediction=False).setBoundaries(*boundaries).setRadius(52)
+    normal_cam = CAM_Filter(fps, 45290, noise, name="CAM Filter")
+    normal_cvm = Smart_CVM_Filter(fps, 2210, noise, name="CVM Filter", smart_prediction=False)
 
-    cam_smart = Smart_CAM_Filter(1.0/60, 511, noise, name="Smart CAM", dynamic_process_noise=None, smart_prediction=True).setBoundaries(*boundaries).setRadius(52)
-    smart_dyn_cvm = Smart_CVM_Filter(1.0 / 60, 350, noise, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(*boundaries).setRadius(52)
-    cam_dynamic_smart = Smart_CAM_Filter(1.0/60, 350, noise, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(*boundaries).setRadius(52)
+    cam_dynamic = Smart_CAM_Filter(fps, 400, noise, name="dynamic CAM", dynamic_process_noise=40000, smart_prediction=False).setBoundaries(*boundaries).setRadius(ball_radius)
+    cvm_dynamic = Smart_CVM_Filter(fps, 300, noise, name="dynamic CVM", dynamic_process_noise=2210, smart_prediction=False).setBoundaries(*boundaries).setRadius(ball_radius)
+
+    smart_smart = Smart_CAM_Filter(fps, 511, noise, name="Smart CAM", dynamic_process_noise=None, smart_prediction=True).setBoundaries(*boundaries).setRadius(ball_radius)
+    smart_cvm = Smart_CVM_Filter(fps, 533, noise, name="Smart CVM").setBoundaries(*boundaries).setRadius(ball_radius)
+    
+    smart_dyn_cvm = Smart_CVM_Filter(fps, 350, noise, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(*boundaries).setRadius(ball_radius)
+    smart_dyn_cam = Smart_CAM_Filter(fps, 350, noise, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(*boundaries).setRadius(ball_radius)
 
     filters = [normal_cvm, cvm_dynamic, smart_cvm]
     sim.run(filters, show_video=True, show_prediction=2, save_prediction=True, file="simulations/sim_9.0_900_60.csv")
