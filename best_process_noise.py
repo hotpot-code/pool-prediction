@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm, trange
 from filter.smart_filter import Smart_CAM_Filter
 from simulation import Simulation
+from pool_simulator import PoolSimulation
 from multiprocessing import Process
 import matplotlib
 import matplotlib.pyplot as plt
@@ -31,7 +32,7 @@ def find_best_process_noise_and_dynamic(my_filter, file, process_noise_range = r
     plt.yticks(range(0, len(dynamic_process_noise_range)), list(dynamic_process_noise_range))
     plt.show()
 
-def find_best_process_noise(my_filter, file, process_noise_range = range(2000, 3000, 1)):
+def find_best_process_noise(my_filter, file, process_noise_range = range(0, 10000, 1000)):
     best_process_noise = 0
     best_db = 10000
     mse = list()
@@ -47,15 +48,20 @@ def find_best_process_noise(my_filter, file, process_noise_range = range(2000, 3
                 best_process_noise = process_noise
             pbar.update(1)
 
-    plt.plot(process_noise_range, mse, label='linear')
-    plt.xlabel("process noise")
-    plt.ylabel("MSE")
-    plt.annotate('best process noise', xy=(best_process_noise, best_db),  xycoords='data',
-            xytext=(0.5, 0.5), textcoords='axes fraction',
-            arrowprops=dict(facecolor='black', shrink=0.05),
-            horizontalalignment='right', verticalalignment='top',
-            )
-    plt.show()
+    step = process_noise_range[1] - process_noise_range[0]
+    next_step = int(step / 10.0)
+    if (next_step >= 1):
+        return find_best_process_noise(my_filter, file, range(best_process_noise - step, best_process_noise + step, next_step))
+
+    # plt.plot(process_noise_range, mse, label='linear')
+    # plt.xlabel("process noise")
+    # plt.ylabel("MSE")
+    # plt.annotate('best process noise', xy=(best_process_noise, best_db),  xycoords='data',
+    #         xytext=(0.5, 0.5), textcoords='axes fraction',
+    #         arrowprops=dict(facecolor='black', shrink=0.05),
+    #         horizontalalignment='right', verticalalignment='top',
+    #         )
+    # plt.show()
 
     print("Found best process noise for simulation with noise=%f and start_velocity=%f! Best: %fdB with pn=%f" % (my_filter.sensor_noise, sim.start_velocity, best_db, best_process_noise))
     return best_process_noise
@@ -87,7 +93,10 @@ def find_best_dynamic_process_noise(my_filter, file, dynamic_process_noise_range
 
 
 if __name__ == '__main__':
-        my_filter = Smart_CVM_Filter(0.01666, 350, 2.0, smart_prediction=True, dynamic_process_noise=None).setBoundaries(100, 1820, 100, 980).setRadius(25)
-        my_dyn_filter = Smart_CVM_Filter(0.01666, 350, 2.0, smart_prediction=False, dynamic_process_noise=None).setBoundaries(100, 1820, 100, 980).setRadius(25)
-        #find_best_process_noise(my_filter, file="simulations/sim_2.0_500_60.csv", process_noise_range = range(150, 2000, 2))
-        find_best_process_noise_and_dynamic(my_dyn_filter, file="simulations/sim_2.0_500_60.csv", process_noise_range = range(100, 700, 20), dynamic_process_noise_range = range(1500, 9500, 500))
+    boundaries = (PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_width, PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_height)
+    ball_radius = 52
+
+    my_filter = Smart_CVM_Filter(1.0 / 60, 350, 9.0, smart_prediction=True, dynamic_process_noise=None).setBoundaries(*boundaries).setRadius(ball_radius)
+    my_dyn_filter = Smart_CVM_Filter(0.01666, 350, 2.0, smart_prediction=False, dynamic_process_noise=None).setBoundaries(100, 1820, 100, 980).setRadius(25)
+    find_best_process_noise(my_filter, file="simulations/sim_9.0_720_60.csv", process_noise_range = range(0, 10000, 1000))
+    #find_best_process_noise_and_dynamic(my_dyn_filter, file="simulations/sim_2.0_500_60.csv", process_noise_range = range(100, 700, 20), dynamic_process_noise_range = range(1500, 9500, 500))
