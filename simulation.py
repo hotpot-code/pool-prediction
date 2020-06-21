@@ -224,7 +224,7 @@ class Simulation():
             output_string = ""
             for i in range(0, len(filters)):
                 output_string += "%s: %fdB " % (filters[i].name, self.mse_list[i])
-            output_string += "No Filter: %fdB " % self.mse_list[-1]
+            output_string += "no filter: %fdB " % self.mse_list[-1]
             print(output_string)
 
         return self.mse_list
@@ -269,7 +269,7 @@ class Simulation():
             if v > 0:
                 plt.text(v - 0.2, i + width/2,  "{:10.2f}dB".format(v), color='black', fontweight='bold', ha='right', va='center')
         plt.xlabel('MSE in dB')
-        plt.yticks(x, [*self.names, "no Filter"])
+        plt.yticks(x, [*self.names, "no filter"])
         plt.gca().invert_yaxis()
         plt.title("Filter Comparison")
 
@@ -388,7 +388,9 @@ if __name__ == "__main__":
     #             sim = Simulation(noise=noise, start_velocity=vel, update_time_in_secs=(1.0 / fps))
     #             sim.create_csv("simulations/sim_" + str(noise) + "_" + str(vel) + "_" + str(fps) + ".csv")
 
-    sim = Simulation()
+    sim = Simulation(name="noise 1cm")
+    sim2 = Simulation(name="noise 3cm")
+    sim3 = Simulation(name="noise 9cm")
 
     boundaries = (PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_width, PoolSimulation.inset, PoolSimulation.inset + PoolSimulation.table_height)
     ball_radius = 52
@@ -397,22 +399,27 @@ if __name__ == "__main__":
     fps = 1.0 / 60
 
     normal_cam = CAM_Filter(fps, 200, noise, name="CAM Filter")
-    normal_cvm = Smart_CVM_Filter(fps, 2210, noise, name="CVM Filter", smart_prediction=False)
+    normal_cvm = Smart_CVM_Filter(fps, 1100, noise, name="Kalman filter", smart_prediction=False)
 
     cam_dynamic = Smart_CAM_Filter(fps, 400, noise, name="dynamic CAM", dynamic_process_noise=40000, smart_prediction=False).setBoundaries(*boundaries).setRadius(ball_radius)
-    cvm_dynamic = Smart_CVM_Filter(fps, 300, noise, name="dynamic CVM", dynamic_process_noise=2210, smart_prediction=False).setBoundaries(*boundaries).setRadius(ball_radius)
+    cvm_dynamic = Smart_CVM_Filter(fps, 900, noise, name="Dynamic-Q", dynamic_process_noise=4200, smart_prediction=False).setBoundaries(*boundaries).setRadius(ball_radius)
 
     smart_cam = Smart_CAM_Filter(fps, 511, noise, name="Smart CAM", dynamic_process_noise=None, smart_prediction=True).setBoundaries(*boundaries).setRadius(ball_radius)
-    smart_cvm = Smart_CVM_Filter(fps, 655, noise, name="Smart CVM").setBoundaries(*boundaries).setRadius(ball_radius)
+
+    smart_cvm = Smart_CVM_Filter(fps, 800, noise, name="Smart Filter").setBoundaries(*boundaries).setRadius(ball_radius)
+    smart_cvm2 = Smart_CVM_Filter(fps, 1500, 27.0, name="Smart Filter").setBoundaries(*boundaries).setRadius(ball_radius)
+    smart_cvm3 = Smart_CVM_Filter(fps, 3700, 45.0, name="Smart Filter").setBoundaries(*boundaries).setRadius(ball_radius)
     
     smart_dyn_cvm = Smart_CVM_Filter(fps, 350, noise, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(*boundaries).setRadius(ball_radius)
     smart_dyn_cam = Smart_CAM_Filter(fps, 350, noise, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(*boundaries).setRadius(ball_radius)
 
-    filters = [smart_cvm]
-    sim.run(filters, show_video=True, show_gt=False, show_noised=True, show_prediction=-1, draw_prediction_path=0, save_prediction=True, file="simulations/sim_9.0_900_60.csv")
-    #sim.show_mse_velocity_comparison_plot()
-    sim.show_mse_comparison_plot(pre_no=30)
-    #sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
+    filters = [cvm_dynamic, smart_cvm]
+    sim.run(filters, show_video=True, show_gt=False, show_noised=False, show_prediction=-1, draw_prediction_path=-1, save_prediction=True, file="simulations/sim_9.0_900_60.csv")
+    #sim2.run([smart_cvm2], show_video=False, show_gt=False, show_noised=False, show_prediction=-1, draw_prediction_path=-1, save_prediction=True, file="simulations/sim_27.0_900_60.csv")
+    #sim3.run([smart_cvm3], show_video=False, show_gt=False, show_noised=False, show_prediction=-1, draw_prediction_path=-1, save_prediction=True, file="simulations/sim_45.0_900_60.csv")
+    sim.show_mse_velocity_comparison_plot()
+    #sim.show_mse_comparison_plot(pre_no=30)
+    #sim.show_prediction_boxplot(filter=0,pre_nos=(15, 30, 60))
     #sim.show_prediction_plot(filters=(1, 2), pre_nos=[30], show_bank=True)
 
-    #show_prediction_boxplot([sim, sim2, sim3], 2)
+    #show_prediction_boxplot([sim, sim2, sim3], 0)

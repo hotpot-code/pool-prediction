@@ -98,5 +98,5 @@ if __name__ == '__main__':
 
     my_filter = Smart_CVM_Filter(1.0 / 60, 350, 9.0, smart_prediction=True, dynamic_process_noise=None).setBoundaries(*boundaries).setRadius(ball_radius)
     my_dyn_filter = Smart_CVM_Filter(0.01666, 350, 2.0, smart_prediction=False, dynamic_process_noise=None).setBoundaries(100, 1820, 100, 980).setRadius(25)
-    find_best_process_noise(my_filter, file="simulations/sim_9.0_720_60.csv", process_noise_range = range(0, 10000, 1000))
+    find_best_process_noise(my_filter, file="simulations/sim_9.0_900_60.csv", process_noise_range = range(0, 10000, 1000))
     #find_best_process_noise_and_dynamic(my_dyn_filter, file="simulations/sim_2.0_500_60.csv", process_noise_range = range(100, 700, 20), dynamic_process_noise_range = range(1500, 9500, 500))

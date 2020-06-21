@@ -9,9 +9,9 @@ class CVM_Filter():
         self.xhat = np.matrix([[0], [0]])
         # init für x posteriori (geschätzte Werte)
         self.x_post = np.matrix([
-            [0],  # Start x Position
+            [960],  # Start x Position
             [0],  # Start x Geschwindigkeit
-            [0],  # Start y Position
+            [540],  # Start y Position
             [0],  # Start y Geschwindigkeit
         ])
         # init für P posteriori (geschätze Abweichung) groß machen

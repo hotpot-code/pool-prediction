@@ -40,7 +40,6 @@ class Smart_CVM_Filter(CVM_Filter):
         super(Smart_CVM_Filter, self).dofilter(y1,y2)
 
         if self.smart_prediction:
-
             def applyReflectionTopBottom():
                 self.x_post[3, 0] = self.x_post[3, 0] * -1
 
