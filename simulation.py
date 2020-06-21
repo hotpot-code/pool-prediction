@@ -94,7 +94,7 @@ class Simulation():
         return ts
 
 
-    def run(self, filters, show_video = False, save_prediction = True, show_prediction=0, show_output=True, file=None):
+    def run(self, filters, show_video = False, save_prediction = True, show_prediction=0, show_output=True, file=None, show_noised=False, show_gt=True, draw_prediction_path=-1, prediction_path_frame=30):
 
         if file is None:
             sim = PoolSimulation(start_angle = -0.7, start_velocity = self.start_velocity, seconds=self.update_time_in_secs, friction=10.3, noise=self.noise)
@@ -107,7 +107,7 @@ class Simulation():
             self.names.append(filters[i].name)
 
         self.points = list()
-        noised_points = list()
+        self.noised_points = list()
 
         filter_points = list()
         for i in range(0, len(filters)):
@@ -149,7 +149,7 @@ class Simulation():
                 filter_points[i].append(custom_filter.dofilter(noised_position[0], noised_position[1]))
                 self.filter_velocities[i].append(custom_filter.getVelocity())
 
-            noised_points.append(noised_position)
+            self.noised_points.append(noised_position)
             self.points.append(position)
 
             if save_prediction:
@@ -169,13 +169,24 @@ class Simulation():
                                 cv2.line(frame, (int(last_point[0]),int(last_point[1])), (int(point[0]),int(point[1])), colors[i], 2)
                             last_point = point
 
-                if len(self.points) > 1:
-                    last_point = None
-                    for point in self.points:
-                        if last_point is not None:
-                            cv2.line(frame, (int(last_point[0]), int(last_point[1])), (int(point[0]), int(point[1])),
-                                    (0, 255, 0), 2)
-                        last_point = point
+                if show_gt:
+                    if len(self.points) > 1:
+                        last_point = None
+                        for point in self.points:
+                            if last_point is not None:
+                                cv2.line(frame, (int(last_point[0]), int(last_point[1])), (int(point[0]), int(point[1])),
+                                        (0, 255, 0), 2)
+                            last_point = point
+                
+                if show_noised:
+                    if len(self.noised_points) > 1:
+                        last_point = None
+                        for point in self.noised_points:
+                            if last_point is not None:
+                                cv2.line(frame, (int(last_point[0]), int(last_point[1])), (int(point[0]), int(point[1])),
+                                        (0, 0, 255), 2)
+                            last_point = point
+
 
                 cv2.circle(frame, (int(noised_position[0]), int(noised_position[1])), 10, (0,0,255), -1)
 
@@ -184,6 +195,16 @@ class Simulation():
                     preVar = self.filter_predictions[show_prediction][frame_no][1]
                     for i in range(0, len(prePos), 5):
                         cv2.ellipse(frame, (prePos[i][0], prePos[i][1]), (int(4* np.sqrt(preVar[i][0])), int(4*np.sqrt(preVar[i][1]))), 0, 0, 360, (0, 200, 255), 2)
+
+                if draw_prediction_path > -1 and draw_prediction_path < len(self.filter_predictions):
+                    if len(self.filter_predictions[0]) > 1:
+                        last_point = None
+                        for prediction in self.filter_predictions[draw_prediction_path]:
+                            point = prediction[0][prediction_path_frame]
+                            if last_point is not None:
+                                cv2.line(frame, (int(last_point[0]), int(last_point[1])), (int(point[0]), int(point[1])),
+                                        (255, 255, 255), 4)
+                            last_point = point
 
                 cv2.namedWindow('Pool Simulation', cv2.WINDOW_NORMAL)
                 cv2.imshow("Pool Simulation", frame)
@@ -197,7 +218,7 @@ class Simulation():
         self.mse_list = list()
         for i in range(0, len(filter_points)):
             self.mse_list.append(10 * np.log10(self.residual(filter_points[i], self.points)))
-        self.mse_list.append(10 * np.log10(self.residual(noised_points, self.points)))
+        self.mse_list.append(10 * np.log10(self.residual(self.noised_points, self.points)))
 
         if show_output:
             output_string = ""
@@ -375,20 +396,20 @@ if __name__ == "__main__":
     noise = 9.0
     fps = 1.0 / 60
 
-    normal_cam = CAM_Filter(fps, 45290, noise, name="CAM Filter")
+    normal_cam = CAM_Filter(fps, 200, noise, name="CAM Filter")
     normal_cvm = Smart_CVM_Filter(fps, 2210, noise, name="CVM Filter", smart_prediction=False)
 
     cam_dynamic = Smart_CAM_Filter(fps, 400, noise, name="dynamic CAM", dynamic_process_noise=40000, smart_prediction=False).setBoundaries(*boundaries).setRadius(ball_radius)
     cvm_dynamic = Smart_CVM_Filter(fps, 300, noise, name="dynamic CVM", dynamic_process_noise=2210, smart_prediction=False).setBoundaries(*boundaries).setRadius(ball_radius)
 
-    smart_smart = Smart_CAM_Filter(fps, 511, noise, name="Smart CAM", dynamic_process_noise=None, smart_prediction=True).setBoundaries(*boundaries).setRadius(ball_radius)
-    smart_cvm = Smart_CVM_Filter(fps, 533, noise, name="Smart CVM").setBoundaries(*boundaries).setRadius(ball_radius)
+    smart_cam = Smart_CAM_Filter(fps, 511, noise, name="Smart CAM", dynamic_process_noise=None, smart_prediction=True).setBoundaries(*boundaries).setRadius(ball_radius)
+    smart_cvm = Smart_CVM_Filter(fps, 655, noise, name="Smart CVM").setBoundaries(*boundaries).setRadius(ball_radius)
     
     smart_dyn_cvm = Smart_CVM_Filter(fps, 350, noise, name="dynamic smart CVM", dynamic_process_noise=860,).setBoundaries(*boundaries).setRadius(ball_radius)
     smart_dyn_cam = Smart_CAM_Filter(fps, 350, noise, name="dynamic smart CAM", dynamic_process_noise=860, smart_prediction=True).setBoundaries(*boundaries).setRadius(ball_radius)
 
-    filters = [normal_cvm, cvm_dynamic, smart_cvm]
-    sim.run(filters, show_video=True, show_prediction=2, save_prediction=True, file="simulations/sim_9.0_900_60.csv")
+    filters = [smart_cvm]
+    sim.run(filters, show_video=True, show_gt=False, show_noised=True, show_prediction=-1, draw_prediction_path=0, save_prediction=True, file="simulations/sim_9.0_900_60.csv")
     #sim.show_mse_velocity_comparison_plot()
     sim.show_mse_comparison_plot(pre_no=30)
     #sim.show_prediction_boxplot(filter=2,pre_nos=(15, 30, 60))
