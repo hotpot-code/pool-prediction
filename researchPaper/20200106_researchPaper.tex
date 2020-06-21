@@ -55,21 +55,24 @@
 \fancyhf{}
 \fancyfoot[C]{\thepage}
 \rhead{Lückert, Neudecker}
-\lhead{Pool-Predictor - a Kalman-Filter Implementation}
+\lhead{Kalman filtering with collision detection using the example of billiards}
  
 \begin{document}
 
-\title{Pool-Predictor - a Kalman-Filter Implementation}
+\title{Kalman filtering with collision detection using the example of billiards}
 \author{Marlon Lückert B.Sc. - Julius Neudecker B.Sc.}
 \date{June 2020}
 
 \maketitle
 
 \begin{abstract}
-In this article we are going to discuss an implementation of the Kalman-filter \cite{kalman} to improve measurement quality and predict the movement of balls on a pool table. 
-We are going to point out the reasoning why we implemented the filter as a constant velocity model and its weak points in this situation.
-Since the performance of the filter deteriorates in cases of a rapid change in direction, we derived two different implementations with adaptive behavior.
-The implementations were tested in a simulator and with real world video footage of a pool table.
+In this article we are going to discuss enhancements to the Kalman filter \cite{kalman} which improve the tracking and prediction of moving objects
+that may collide with other objects resulting in an abrupt change of their direction.
+To illustrate and test the improvements, we use a game of billiards and track and predict the position of a moving billiard ball which collides with the cushions of the billiard table.
+We developed two improved versions to the standardized Kalman filter.
+The first implementation dynamically adjusts the process noise at a collision.
+The second implementation takes the rebound angle into account when colliding with an object. 
+The implementations were tested in a virtual simulated environment and with real world video footage of a billiard game.
 We conclude this paper with a performance evaluation of the implementation and provide a proposal to further increase accuracy.
 
 \end{abstract}
@@ -79,28 +82,52 @@ We conclude this paper with a performance evaluation of the implementation and p
 \begin{multicols}{2}
 \section{Introduction}
 
-\subsection{Game of Pool} \label{intro}
+\subsection{Kalman filter}
 
-At first glance the game of pool is very suitable to examine the behavior of a kalman-filter enhanced tracking system based on pure visual tracking. 
-The surface of a pool table is made of a thin fabric which covers a hard surface i.e. slate or granite.
-The balls nowadays are usually made out of resin. This combination of materials creates very small rolling resistance and the balls behave almost fully elastic on collision.
-Since this is only a 2 DOF\footnote{Dimensions Of Freedom - determines the possible rotation or translation along each given axis} problem, this can be solved with a simple linear kalman filter implementation. 
+Kalman filtering is used to produce estimations of unknown variables based on a series of measurements over time.
+It filters statistical noise and other inaccuracies by comparing the measurement with a prediction based on a previous measurement.
+In order to make these predictions the observed object has to follow a linear physical model, like a moving car or a rolling ball, which enables a precise calculation of future states.
+The filter cannot react to sudden changes that are caused by the environment or other objects, like the collision of a rolling ball with another object.
+The Kalman filter has to be modified to receive better results in the mentioned circumstances.
+
+\subsection{Game of billiards} \label{intro}
+
+Billiards is perfect example of the combination of linear movement and sudden changes caused by the environment.
+Linear movement happens when the ball is freely rolling. It moves with an almost constant velocity in one direction, caused by the very small rolling resistance between the material of the ball and the table.
+This behavior is very suitable for the usage of Kalman filter especially when dealing with noised data.
+
+In video analysis of billiard or snooker games the state of the art solution for tracking are computer vision algorithms \cite[p.~226]{fraenti2014structural}.
+These algorithms generate noised data because they depend on the quality of the video footage, which includes the resolution, lighting conditions and perspective distortion.
+The Kalman filter helps to improve the overall quality of the tracking when using visual tracking algorithms.
+
 The problem is, when two balls hit each other or a cushion the velocity vector changes its orientation instantly. 
 If this isn't taken into account, the filter needs some time to adapt to the new direction of movement and will produce wrong estimations during this time.
-
-This behavior is independent of the type of kalman implementation being CVM or CAM (see \cref{kalman-basic}).
 A kalman filter will assume the direction of movement on any given sample is about the same as in the last sample. 
 It will therefore create wrong estimations if the direction of movement changes drastically in a short period of time. The time the filter needs to recover depends on the filter gain.
+At this point our research begins, where we customize the filter implementation in the way that we receive good estimation even when this sudden changes of movement happen.
 
-We also use the filter to predict values for any given length into the future by feeding back its estimations as actual state. 
+Additionally we not just want to improve the tracking but furthermore improve the prediction of the ball position by feeding back its estimations as actual state. 
 The quality of this prediction however depends on several factors, which we discuss in detail in \cref{implementation}.
 
-\subsection{Visual Recognition of moving elements}
+\section{Methodology}
 
-In order to create a input vector we have to track the balls on the pool table. 
+To evaluate the performance of the different filter implementations we have to compare the filter result with the actual position of the ball.
+The key figure for this comparison is the mean square error (mse), which calculates the mean value of all quadratic difference between the filtered position and the real position over a specific time frame.
+We calculate the mse for the current position of the ball and the predicted future positions of the ball.
+\subsection{Simulation}
+
+To be able to calculate the mse we have to know the ground truth position of the billiard ball.
+Therefore we created an environment which gives us full control of all parameters of a billiard game.
+In the simulations we generate a virtual billiard game where we can set the speed of the ball, the noise of the sensor and the sampling rate of the sensor.
+The simulation gives us access to all parameters of the ball and the environment these include the current position and speed of the ball and the position of the cushions of the billiard table.
+
+\subsection{Real video footage}
+
+Besides the evaluation with the simulation we want to test the filter implementations in real video content.
+In order to create input data for the Kalman filter we have to track the balls on the billiard table. 
 To provide consistent and reproducible results, we used video footage and processed it with the Python implementation of openCV.
 A video example as seen in \cref{pic:pool-color} is put into an instance of simple video-processing steps to create a black and white mask of the ball contours as displayed in \cref{pic:pool-bw},
-where the center of the white pixel cluster is the ball we're looking for.
+where the center of the white pixel cluster is the ball we are looking for.
 
 \begin{figure}[H]
     \centering
@@ -115,6 +142,9 @@ where the center of the white pixel cluster is the ball we're looking for.
     \caption{contours of balls after processing}
     \label{pic:pool-bw}
 \end{figure}
+
+In the real video footage we cannot calculate a mse for the current position. because we do not know the ground truth position just the sensor data.
+But we can evaluate the prediction by comparing the predicted position to the filtered position and use this mse.
 
 \section{Related Work}
 
@@ -144,7 +174,7 @@ Gabdulkhakova and Kropatsch \cite{kropatsch} use a kalman filter to create a vid
 They were able to show how to track snooker balls with non-linear motion.
 
 \section{Implementation} \label{implementation}
-In this section we're going to discuss the different implementations and their constraints. The filter implementations in section Dynamic-q and Smart Filter are derived from
+In this section we're going to discuss the different implementations and their constraints. The filter implementations in section Dynamic-Q Filter and Smart Filter are derived from
 the basic implementation in \cref{kalman-basic}. At the end of this section we will provide a comparison of all filter types and their performance in our simulation.
 
 \subsection{Kalman Filter} \label{kalman-basic}
@@ -179,9 +209,8 @@ Every prediction which is used in \cref{eq1}, was previously calculated using th
     \tilde{x}[n]=A_d\cdot\hat{x}[n-1]
 \end{equation}
 
-The important parts for our further development are $A_d$ in \cref{eq3} and $\tilde{P}[n]$ in \cref{eq2}. The state transition matrix $Ad$ defines the motion model of our filter.
-There are two principal models which we are going to examine: 
-the constant velocity model (CVM) and constant acceleration model (CAM). This determines the state transition matrix $A_d$ and defines the constant component of the state-time derivative: velocity or acceleration.
+The state transition matrix $Ad$ defines the motion model of our filter.
+We are going to use the constant velocity model, because the ball is rolling straight without any curves.
 The estimation error $\tilde{P}[n]$ is defined in \cref{eq4}:
 
 \begin{equation} 
@@ -189,14 +218,17 @@ The estimation error $\tilde{P}[n]$ is defined in \cref{eq4}:
     \tilde{P}[n]=A_d\cdot\hat{P}[n-1]\cdot A_d^T+G_d\cdot Q\cdot G_d^T
 \end{equation}
 
-The element $Q$ is the important part here. It defines the amount of systemnoise in the whole filter process, which we are going to discuss in \cref{dynamic-q}.
+The element $Q$ is the important part here. It defines the amount of process noise in the whole filter process, which we are going to discuss in \cref{dynamic-q}.
 
-\subsection{Dynamic CVM Q-parameters} \label{dynamic-q}
+\subsection{Dynamic-Q Filter} \label{dynamic-q}
 
 We previously mentioned in \cref{intro}, that depending on the model the filter can't adapt to sudden changes in direction of the moving object. 
 The case where the ball collides with the cushion can be mitigated by choosing a different values for $Q$ in \cref{eq4} within the crucial time window.
 Thus the filter relies more on the measurement than the estimations. By doing so it can adapt momentarily.
 We implemented a look-up table and constantly check every sample for proximity to a cushion.
+
+We have to feed the filter with two additional parameters: The position of the cushion and the dynamic q-parameter.
+
 In order to parametrize the filter optimal, we ran a simulation to iterate over several values for $Q$. The result is shown in \cref{fig:dyn-sim}:
 
 \begin{figure} [H]
@@ -212,7 +244,7 @@ There is clearly a sweetspot for the optimal parametrization, which we chose to 
 Although the optimal area continues further up the ordinate, it does not make sense to look for optimal parametrization there
 because increasing these values would mean to approach the behavior of the sensor what wouldn't be beneficial.
 
-\subsection{Smart CVM Filter} \label{smart-filter}
+\subsection{Smart Filter} \label{smart-filter}
 
 In addition to the previous section we developed another improvement. In this case it can be assumed that the angle of incidence is equal to angle of reflection. 
 With this assumption we can now implement the reflection with a single vector-multiplication expression. 
@@ -238,10 +270,11 @@ Assuming that we have a velocity vector pointing in the direction of $x$ and $y$
 
 As in the previous section this operation can be performed, when the ball hits the cushion.
 
+Now the filter needs more information about the environment. We have to define the position of each cushion and the direction of each cushion to be able to calculate the correct reflection angle.
 
 \subsection{Filter performance comparison} \label{perf-comp}
 
-We developed a simulation, where we could test different parameters and scenarios to get reproductible results. 
+We developed a simulation, where we could test different parameters and scenarios to get reproducible results. 
 We also used this simulation to determine the optimal value for the process noise in \cref{dynamic-q}. The results are shown in \cref{fig:sim-results}:
 
 \begin{figure}[H]
