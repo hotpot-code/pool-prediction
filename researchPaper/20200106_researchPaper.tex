@@ -1,7 +1,7 @@
-\documentclass[notitlepage, a4paper, 11pt]{scrartcl}
+\documentclass[titlepage, a4paper, 11pt]{scrartcl}
 
 %too much whitespace otherwise
-\usepackage[left=23mm,top=20mm,right=23mm,bottom=15mm]{geometry}
+\usepackage[left=35mm,top=26mm,right=26mm,bottom=15mm]{geometry}
 
 % deutsche Übersetzungen
 %\usepackage[ngerman]{babel}
@@ -38,32 +38,20 @@
 \usepackage{hyperref}
 \usepackage{cleveref}
 
-\makeatletter
-\patchcmd{\@maketitle}{\vskip 2em}{\vspace*{-1cm}}{}{}
-\makeatother
-
-% Keywords command
-\providecommand{\keywords}[1]
-{
-  \small	
-  \textbf{\textit{Keywords---}} #1
-}
-
-\titleformat*{\subsection}{\small\bfseries}
-
 \pagestyle{fancy}
 \fancyhf{}
-\fancyfoot[C]{\thepage}
 \rhead{Lückert, Neudecker}
-\lhead{Kalman filtering with collision detection using the example of billiards}
+\lhead{Kalman filtering with collision detection}
  
 \begin{document}
 
-\title{Kalman filtering with collision detection using the example of billiards}
-\author{Marlon Lückert B.Sc. - Julius Neudecker B.Sc.}
-\date{June 2020}
+    \title{Kalman filtering with collision detection using the example of billiards}
+    \author{Marlon Lückert \\ Bachelor of Science \\ \href{mailto:marlon.lueckert@haw-hamburg.de}{marlon.lueckert@haw-hamburg.de} 
+    \and Julius Neudecker \\ Bachelor of Science \\ \href{mailto:julius.neudecker@haw-hamburg.de}{julius.neudecker@haw-hamburg.de} }
+    \date{June 2020}
+    \maketitle
 
-\maketitle
+    \tableofcontents
 
 \begin{abstract}
 In this article we are going to discuss enhancements to the Kalman filter \cite{kalman} which improve the tracking and prediction of moving objects
@@ -74,12 +62,9 @@ The first implementation dynamically adjusts the process noise at a collision.
 The second implementation takes the rebound angle into account when colliding with an object. 
 The implementations were tested in a virtual simulated environment and with real world video footage of a billiard game.
 We conclude this paper with a performance evaluation of the implementation and provide a proposal to further increase accuracy.
-
 \end{abstract}
 
-\keywords{kalman, pool, prediction, filter}
 
-\begin{multicols}{2}
 \section{Introduction}
 
 \subsection{Kalman filter}
@@ -131,14 +116,14 @@ where the center of the white pixel cluster is the ball we are looking for.
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{pool_color.PNG}}
-    \caption{color picture of a pool table}
+    \fbox{\includegraphics[width=0.68\textwidth]{pool_color.PNG}}
+    \caption{color picture of a billiard table}
     \label{pic:pool-color}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{pool_mask.PNG}}
+    \fbox{\includegraphics[width=0.68\textwidth]{pool_mask.PNG}}
     \caption{contours of balls after processing}
     \label{pic:pool-bw}
 \end{figure}
@@ -233,7 +218,7 @@ In order to parametrize the filter optimal, we ran a simulation to iterate over 
 
 \begin{figure} [H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{dynamic_pn.png}}
+    \fbox{\includegraphics[width=0.68\textwidth]{dynamic_pn.png}}
     \caption{Simulation for optimal Q-Parameters}
     \label{fig:dyn-sim}
 \end{figure}
@@ -243,6 +228,8 @@ The color scale represents the achieved MSE with this parametrization: green mea
 There is clearly a sweetspot for the optimal parametrization, which we chose to parametrize the filter with.
 Although the optimal area continues further up the ordinate, it does not make sense to look for optimal parametrization there
 because increasing these values would mean to approach the behavior of the sensor what wouldn't be beneficial.
+As you can see the general process noise is much lower than the dynamic process noise.
+This tells us, that the filter has to trust the sensor data more in those edge cases, but can rely on predictions after it hit the cushion.
 
 \subsection{Smart Filter} \label{smart-filter}
 
@@ -272,6 +259,8 @@ As in the previous section this operation can be performed, when the ball hits t
 
 Now the filter needs more information about the environment. We have to define the position of each cushion and the direction of each cushion to be able to calculate the correct reflection angle.
 
+\section{Evaluation}
+
 \subsection{Filter performance comparison} \label{perf-comp}
 
 We developed a simulation, where we could test different parameters and scenarios to get reproducible results. 
@@ -279,44 +268,53 @@ We also used this simulation to determine the optimal value for the process nois
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{filter_comparison_horizontal.PNG}}
-    \caption{Performance of different filter implementations for CVM and CAM}
+    \fbox{\includegraphics[width=0.68\textwidth]{filter_comparison_horizontal2.PNG}}
+    \caption{Performance of different filter implementations}
     \label{fig:sim-results}
 \end{figure}
 
-The orange column represents the quality of the filter output against the ground truth. 
-The effect can be seen very clearly when compared to the $no filter$ graph. 
-The blue column shows how much the prediction 30 frames in the future deviated from the ground truth.
-The effect of the dynamic process noise is negligible but the vector mirroring has a large impact on the accuracy on either motion models.
-It is especially interesting that the CAM model shows a better performance in this particular case. 
-This is due to the fact this model can be very accurate but is also very sensitive for error.
+The orange bar represents the quality of the filter output against the ground truth of the current position. 
+The blue bar shows how much the prediction 30 frames in the future deviated from the ground truth.
+You can see that the standard Kalman filter minimally improves the tracking compared to the bare sensor.
+The improvement in tracking with the Dynamic-Q filter is as good as with the Smart filter.
+But the prediction with the Smart filter is much better.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.68\textwidth]{smart_vs_noise.png}}
+    \caption{Simulation with Smart Filter and sensor data}
+    \label{fig:smart-vs-sensor}
+\end{figure}
+
+In \cref{fig:smart-vs-sensor} you can see the tracking path of the Smart filter (blue) and the senor data (red).
+The sensor data is very noised and with the smart filter the tracking gains a lot of improvement.
 
 Another impact the vector mirroring has is shown in \cref{fig:deviation-noise} on the time scale:
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{prediction_dyn_smart_time.PNG}}
+    \fbox{\includegraphics[width=0.68\textwidth]{prediction_dyn_smart_time2.PNG}}
     \caption{Performance of different filter implementations}
     \label{fig:deviation-noise}
 \end{figure}
 
 This figure represents the distance to ground truth over time for the prediction 30 frames into the future. 
 The red areas are where the ball is close to the cushion. 
-Although the dynamic-q enhancement mitigates the overshoot problem, the prediction error rises quickly since the prediction accuracy degrades with a higher process noise.
+Although the dynamic-q enhancement (blue line) mitigates the overshoot problem, the prediction error rises quickly since the prediction accuracy degrades with a higher process noise.
 The smart implementation however delivers constant accuracy regardless of any edge cases.
 
-\section{Simulations}
+\subsection{Simulations}
 
-We simulated the smart implementation of the CVM with different technical parameters to examine its performance for predicting values 15, 30 or 60 frames in the future.
+We simulated the Smart filter with different technical parameters to examine its performance for predicting values 15, 30 or 60 frames in the future.
 Displayed is the MSE of the prediction compared to the ground truth.
 
-\subsection{Sampling}
+\subsubsection{Sampling}
 
 The first simulation altered the sampling-rate. In a real-world scenario this would be the frame rate of the camera.
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{fps_boxplot.PNG}}
+    \fbox{\includegraphics[width=0.68\textwidth]{fps_boxplot2.PNG}}
     \caption{Impact of framerates on prediction accuracy}
     \label{fig:framerate10}
 \end{figure}
@@ -324,13 +322,13 @@ The first simulation altered the sampling-rate. In a real-world scenario this wo
 The sample rate has a certain impact on the quality of the prediction. However the the difference between 30 and 60 frames is not as big as between 10 and 30. 
 This depends greatly on the initial velocity of the ball. Since the most cameras support framerates of at least 30fps, this performance is sufficient.
 
-\subsection{Noise}
+\subsubsection{Noise}
 
 The second simulation altered the amount of noise on the measurement and how the filter is able to cope with bad input data.
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{noise_boxplot.PNG}}
+    \fbox{\includegraphics[width=0.68\textwidth]{noise_boxplot2.PNG}}
     \caption{Impact of sensor noise on prediction accuracy}
     \label{fig:noise2}
 \end{figure}
@@ -338,13 +336,13 @@ The second simulation altered the amount of noise on the measurement and how the
 Although the amount of noise increased fivefold, the median stays within the same magnitude of error compared to less noisy samples. The min and max values of deviation however change greatly on magnitude.
 This is a good indicator that the filter is actually able to work with worse measurements than we used in our simulation and is still able to produce reasonably accurate predictions well into the future.
 
-\subsection{Velocity}
+\subsubsection{Velocity}
 
 Lastly we tested the impact of different starting velocities on the distance, which the ball rolls between the sample periods and how this affects the performance:
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{velocity_boxplot.PNG}}
+    \fbox{\includegraphics[width=0.68\textwidth]{velocity_boxplot2.PNG}}
     \caption{Impact of start velocities on prediction accuracy}
     \label{fig:velocity300}
 \end{figure}
@@ -353,7 +351,7 @@ It shows that the starting velocity has barely any effect.
 This is what we expected since the sample rate is high enough to provide sufficient data. 
 We also simulated different configurations in order to achieve the highest accuracy possible.
 
-\section{Results with real footage}
+\subsection{Results with real footage}
 
 After evaluating that our filter works well within the simulation, we tested it on real footage. 
 It performed as expected and gave reasonably good predictions.
@@ -364,16 +362,13 @@ but can vary by small margins in a real scenario.
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{pool_real.PNG}}
+    \fbox{\includegraphics[width=0.68\textwidth]{pool_real.PNG}}
     \caption{Filter test on real footage}
     \label{fig:realfootage}
 \end{figure}
 
 Apart from the simulation we did not have data for the ground truth in this case. 
-The quality of the filter can solely be measured by the quality of its prediction. 
-
-As in \cref{perf-comp} mentioned, the CAM model is very sensitive to error. This is especially crucial in real world footage where the MSE (for the prediction of the next 30 frames) of the CVM is only 15.39dB compared to CAM with 21.01dB
-Although the CAM is theoretically superior in quality, its performance is worse in this case due to the reasons pointed out in \cref{perf-comp}.
+The quality of the filter can solely be measured by the quality of its prediction.
 
 \section{Improvements}
 
@@ -383,7 +378,7 @@ it is more complicated in this case due to the edge cases.
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{prediction_error.PNG}}
+    \fbox{\includegraphics[width=0.68\textwidth]{prediction_error.PNG}}
     \caption{Ball hits cushion between two sample points}
     \label{fig:edge-case}
 \end{figure}
@@ -396,18 +391,28 @@ This will likely have a large positive impact on prediction accuracy as well as 
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.47\textwidth]{prediction_correction.PNG}}
+    \fbox{\includegraphics[width=0.68\textwidth]{prediction_correction.PNG}}
     \caption{Collision correction}
     \label{fig:edge-case-sol}
 \end{figure}
 
 Therefore it is a good starting point for further development.
 
+\section{Conclusion} 
+
+We found two solutions to improve the tracking of the billiard balls by extending the Kalman filter.
+The first solution is to raise the process noise in critical areas to give the sensor data more weight in the calculation of the prediction.
+This solution however gives false predictions, because the algorithm does not know how it has to adapt in critical situations and just blindly trusts the sensor data.
+
+The second solution calculates exactly the behavior in the edge cases, which results in robust tracking and trustful predictions. But you have to feed information about the environment to the filter.
+This is in a basic environment like a billiard game fairly easy but in a more advanced use case not trivial.
+
+
 \section{Acknowledgement}
 
 We would like to thank Prof. Edeler for his input during the lecture which really helped to further develop the idea.
 
-\end{multicols}
+\clearpage
 
 \bibliography{references} 
 \bibliographystyle{ieeetr}
